@@ -1,10 +1,8 @@
-from pprint import pprint
 
 import pymongo.errors
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi import status
 from fastapi.encoders import jsonable_encoder
-from starlette.responses import JSONResponse
 
 from misc import nosql
 from models.users import UserIn, UserOut
