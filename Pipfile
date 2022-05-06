@@ -5,6 +5,10 @@ name = "pypi"
 
 [packages]
 fastapi = "*"
+python-multipart = "*"
+python-jose = "*"
+passlib = "*"
+motor = "*"
 
 [dev-packages]
 
