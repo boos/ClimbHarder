@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("/users")
 async def users():
-    return {"message": f"all users returned."}
+    return {"message": "all users returned."}
 
 
 @router.post("/user", response_model=UserOut, response_model_exclude_unset=True,
