@@ -18,7 +18,7 @@ async def users():
     return {"message": f"all users returned."}
 
 
-@router.post("/user", response_model=UserOut,response_model_exclude_unset=True,
+@router.post("/user", response_model=UserOut, response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
              response_model_exclude_none=True,
              status_code=status.HTTP_201_CREATED)
@@ -55,9 +55,11 @@ async def create_user(user: UserIn):
                                                                        exclude_defaults=True))
     except pymongo.errors.DuplicateKeyError as err:
         if err.__str__().find("username") != -1:
-            raise HTTPException(status_code=409, detail="Username already in use, choose another username.")
+            raise HTTPException(
+                status_code=409, detail="Username already in use, choose another username.")
         if err.__str__().find("email") != -1:
-            raise HTTPException(status_code=409, detail="Email already in use, choose another email.")
+            raise HTTPException(
+                status_code=409, detail="Email already in use, choose another email.")
     return user
 
 

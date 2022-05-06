@@ -12,5 +12,3 @@ app.include_router(security.router)
 @app.get("/")
 async def root(token: str = Depends(oauth2_scheme)):
     return {"message": "I am ClimbHarder, and I will make you climb HARDER!", "token": token}
-
-
