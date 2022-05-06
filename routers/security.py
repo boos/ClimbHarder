@@ -2,12 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from jose import jwt
 from typing import Optional
-
-from models.users import UserIn
 from misc.nosql import users_collection
-from models.security import Token, TokenData
+from models.security import Token
 from pprint import pprint
 
 SECRET_KEY = "db486a70cc856cc711476f75324f4bc8e666da841bb76927a731d734b8e4ac5f"
