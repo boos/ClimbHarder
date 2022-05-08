@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from jose import jwt
+from jose import jwt, JWTError
 from typing import Optional
 from misc.nosql import users_collection
 from models.security import Token
@@ -23,7 +23,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-async def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -46,11 +46,10 @@ def verify_password(plain_password: str, hashed_password: str):
 
 
 async def authenticate_user(username: str, password: str):
-    user = await verify_username(username)
+    user = verify_username(username)
     if not user:
         return None
 
-    pprint(user)
     if not verify_password(password, user['password']):
         return None
     return user
@@ -65,7 +64,24 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
                             headers={"WWW-Authenticate": "Bearer"})
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+                                headers={"WWW-Authenticate": "Bearer"})
+        user = await verify_username(username)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+                                headers={"WWW-Authenticate": "Bearer"})
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+                            headers={"WWW-Authenticate": "Bearer"})
+
+    return user
