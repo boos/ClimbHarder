@@ -2,7 +2,8 @@ from bson import ObjectId
 from motor import motor_asyncio
 from pymongo.collection import Collection
 
-db = motor_asyncio.AsyncIOMotorClient('mongodb://nuc:27017/').get_database("ClimbHarder")
+db = motor_asyncio.AsyncIOMotorClient(
+    'mongodb://nuc:27017/').get_database("ClimbHarder")
 users_collection: Collection = db.get_collection("users")
 
 
