@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from typing import Optional
-from misc.nosql import users_collection
+from misc.nosql import db, users_collection
 from models.security import Token
 from pprint import pprint
 
@@ -34,8 +34,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-def verify_username(username: str):
-    user = users_collection.find_one({"username": username})
+async def verify_username(username: str):
+    user = await users_collection.find_one({"username": username})
     if user is None:
         return False
     return user
@@ -46,7 +46,7 @@ def verify_password(plain_password: str, hashed_password: str):
 
 
 async def authenticate_user(username: str, password: str):
-    user = verify_username(username)
+    user = await verify_username(username)
     if not user:
         return None
 
@@ -76,7 +76,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         if username is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
                                 headers={"WWW-Authenticate": "Bearer"})
-        user = await verify_username(username)
+        user = verify_username(username)
         if user is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
                                 headers={"WWW-Authenticate": "Bearer"})

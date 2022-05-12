@@ -9,6 +9,8 @@ python-multipart = "*"
 python-jose = "*"
 passlib = "*"
 motor = "*"
+email-validator = "*"
+bcrypt = "*"
 
 [dev-packages]
 
