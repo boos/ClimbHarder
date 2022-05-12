@@ -49,7 +49,8 @@ async def create_user(user: UserIn):
     - **moonboard_username**: each user might define he/she moonboard password
     """
 
-    user.password = security.get_password_hash(user.password.get_secret_value())
+    user.password = security.get_password_hash(
+        user.password.get_secret_value())
 
     try:
         new_user = await nosql.db["users"].insert_one(user.dict(exclude_none=True,
@@ -87,7 +88,8 @@ async def delete_user(username: str, current_user: User = Depends(security.get_c
         response_status = await users_collection.delete_one({"username": username})
         if response_status.deleted_count == 0:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Unable to delete '{}': User not found.".format(username),
+                                detail="Unable to delete '{}': User not found.".format(
+                                    username),
                                 headers={"WWW-Authenticate": "Bearer"})
 
         return {"message: {} deleted.".format(username)}
@@ -97,7 +99,8 @@ async def delete_user(username: str, current_user: User = Depends(security.get_c
         return {"message: {} deleted.".format(username)}
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Unable to delete '{}': Unauthorized.".format(username),
+                        detail="Unable to delete '{}': Unauthorized.".format(
+                            username),
                         headers={"WWW-Authenticate": "Bearer"})
 
 
