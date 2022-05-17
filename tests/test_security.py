@@ -30,4 +30,3 @@ async def test_authenticate_right_username_right_password():
                                                 '763ab79c83dc114cac76e8fafa9ca0fc0f0fc6cf')
     assert response['username'] == 'dc724af18fbdd4e59189f5fe768a5f8311527050'
     assert response['password'] == '$2b$12$o0e/E4yLuc98.8Ym5FE.SurnuVoaFKbl.4v0oGKmJN7jAt3Wf598K'
-
