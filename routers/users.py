@@ -9,8 +9,9 @@ from misc import nosql
 from misc.nosql import users_collection
 from models.users import User, UserIn, UserOut
 from routers import security
+from routers.security import oauth2_scheme
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
 
 @router.get("/users")

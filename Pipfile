@@ -9,11 +9,12 @@ python-multipart = "*"
 python-jose = "*"
 passlib = "*"
 motor = "*"
+email-validator = "*"
+bcrypt = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
 
 [packages.uvicorn]
 extras = [ "standard",]

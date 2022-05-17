@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from typing import Optional
-from misc.nosql import users_collection
+from misc.nosql import db, users_collection
 from models.security import Token
 from pprint import pprint
 
@@ -19,7 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes="bcrypt", deprecated="auto")
 
 
-def get_password_hash(password):
+def get_password_hash (password: str):
     return pwd_context.hash(password)
 
 
@@ -34,8 +34,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-def verify_username(username: str):
-    user = users_collection.find_one({"username": username})
+async def verify_username(username: str):
+    user = await users_collection.find_one({"username": username})
     if user is None:
         return False
     return user
@@ -46,27 +46,13 @@ def verify_password(plain_password: str, hashed_password: str):
 
 
 async def authenticate_user(username: str, password: str):
-    user = verify_username(username)
+    user = await verify_username(username)
     if not user:
         return None
 
     if not verify_password(password, user['password']):
         return None
     return user
-
-
-@router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Invalid username or password",
-                            headers={"WWW-Authenticate": "Bearer"})
-
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
-
-    return {"access_token": access_token, "token_type": "bearer"}
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -85,3 +71,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
                             headers={"WWW-Authenticate": "Bearer"})
 
     return user
+
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid username or password",
+                            headers={"WWW-Authenticate": "Bearer"})
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+
