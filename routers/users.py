@@ -14,11 +14,6 @@ from routers.security import oauth2_scheme
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
 
-@router.get("/users")
-async def users():
-    return {"message": "all users returned."}
-
-
 @router.post("/user",
              response_model=UserOut,
              response_model_exclude_defaults=True,
