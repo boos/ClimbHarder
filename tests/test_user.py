@@ -30,7 +30,7 @@ def test_cannot_delete_other_user_if_not_admin():
     pass
 
 
-def test_can_delete_user_self()
+def test_can_delete_user_self():
     pass
 
 
