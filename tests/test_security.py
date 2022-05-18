@@ -1,3 +1,7 @@
+from pprint import pprint
+
+from jose import jwt
+
 from routers import security
 
 
@@ -31,3 +35,12 @@ async def test_authenticate_right_username_right_password():
     assert response['username'] == 'dc724af18fbdd4e59189f5fe768a5f8311527050'
     assert response['password'] == '$2b$12$o0e/E4yLuc98.8Ym5FE.SurnuVoaFKbl.4v0oGKmJN7jAt3Wf598K'
 
+
+def test_can_create_access_token_successfully():
+    user = {'username': 'test_user', 'password': 'test_password'}
+    access_token = security.create_access_token(data={"sub": user['username']})
+
+    creds = jwt.decode(access_token, str(security.SECRET_KEY), algorithms=[security.ALGORITHM])
+    pprint(creds)
+    assert creds.get("sub") is not None
+    assert creds["sub"] == user['username']
