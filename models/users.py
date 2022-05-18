@@ -30,7 +30,7 @@ class User(BaseModel):
 
     moonboard_username: Optional[str] = Field(None, title="MoonBoard username.", max_length=256)
 
-    is_admin: bool = Field(False)
+    is_admin: bool = False
 
     class Config:
         allow_population_by_field_name = True
