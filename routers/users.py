@@ -75,9 +75,6 @@ async def delete_user(username: str, current_user: User = Depends(security.get_c
 
     response_status: DeleteResult = None
 
-    pprint(current_user)
-    pprint(username)
-
     if 'is_admin' in current_user and current_user['is_admin'] is True:
         response_status = await users_collection.delete_one({"username": username})
         if response_status.deleted_count == 0:

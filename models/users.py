@@ -14,11 +14,12 @@ class Gender(str, Enum):
 
 class User(BaseModel):
 
-    username: str = Field(None, title="The username.", max_length=64)
+    username: str = Field(..., title="The username.", max_length=64)
+    email: EmailStr = Field(..., title="The email address of the user.")
 
     name: Optional[str] = Field(None, title="The name of the user.", max_length=256)
     surname: Optional[str] = Field(None, title="The surname of the user.", max_length=256)
-    email: EmailStr = Field(None, title="The email address of the user.")
+
     bio: Optional[str] = Field(None, title="The user description", max_length=512)
     sex: Optional[Gender] = None
     birthday: Optional[date] = Field("1900-01-01", title="The birthday of the user.")
@@ -30,8 +31,6 @@ class User(BaseModel):
 
     moonboard_username: Optional[str] = Field(None, title="MoonBoard username.", max_length=256)
 
-    is_admin: bool = False
-
     class Config:
         allow_population_by_field_name = True
         json_encoders = {ObjectId: str}
@@ -39,7 +38,7 @@ class User(BaseModel):
 
 class UserIn(User):
 
-    password: SecretStr
+    password: SecretStr = Field(..., title="The ClimbHarder username password.", max_length=256)
     moonboard_password: Optional[SecretStr] = Field(None, title="MoonBoard password.", max_length=256)
 
 
