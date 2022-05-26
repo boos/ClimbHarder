@@ -13,27 +13,25 @@ async def test_authenticate_wrong_username():
 
 
 async def test_authenticate_right_username():
-    response = await security.verify_username('dc724af18fbdd4e59189f5fe768a5f8311527050')
-    assert response['username'] == 'dc724af18fbdd4e59189f5fe768a5f8311527050'
+    response = await security.verify_username('test')
+    assert response['username'] == 'test'
 
 
 async def test_authenticate_wrong_username_wrong_password():
-    response = await security.authenticate_user('dc724af18fbdd4e59189f5fe768a5f8311527050+wrong-username',
-                                                'wrong-password')
+    response = await security.authenticate_user('test-wrong-username', 'test-wrong-password')
     assert response is None
 
 
 async def test_authenticate_right_username_wrong_password():
-    response = await security.authenticate_user('dc724af18fbdd4e59189f5fe768a5f8311527050',
+    response = await security.authenticate_user('test',
                                                 'wrong-password')
     assert response is None
 
 
 async def test_authenticate_right_username_right_password():
-    response = await security.authenticate_user('dc724af18fbdd4e59189f5fe768a5f8311527050',
-                                                '763ab79c83dc114cac76e8fafa9ca0fc0f0fc6cf')
-    assert response['username'] == 'dc724af18fbdd4e59189f5fe768a5f8311527050'
-    assert response['password'] == '$2b$12$o0e/E4yLuc98.8Ym5FE.SurnuVoaFKbl.4v0oGKmJN7jAt3Wf598K'
+    response = await security.authenticate_user('test', 'test')
+    assert response['username'] == 'test'
+    assert response['password'] == '$2b$12$4.iY1SkYspuhDtBINuaMmumZJ.IC6qZ1XrtX3hgUfwMpE1tZvCl0u'
 
 
 def test_can_create_access_token_successfully():
