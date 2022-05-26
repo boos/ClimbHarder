@@ -31,7 +31,7 @@ async def test_authenticate_right_username_wrong_password():
 async def test_authenticate_right_username_right_password():
     response = await security.authenticate_user('test', 'test')
     assert response['username'] == 'test'
-    assert response['password'] == '$2b$12$4.iY1SkYspuhDtBINuaMmumZJ.IC6qZ1XrtX3hgUfwMpE1tZvCl0u'
+    assert response['password'] == '$2b$12$90VxnpORmw7aGWoiqPCqM.X.qN04N5qfZOuuG.r1TlP5sgllOL0Ae'
 
 
 def test_can_create_access_token_successfully():
