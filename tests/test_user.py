@@ -1,4 +1,5 @@
-import pytest, json
+import pytest
+import json
 from httpx import AsyncClient
 
 from main import app
@@ -19,7 +20,8 @@ async def test_cannot_create_user_without_username_email_password():
     data = {}
     response = await ac.post('/user', content=json.dumps(data))
     assert response.status_code == 422
-    assert response.json() == {'detail': [{'loc': ['body', 'username'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'email'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'password'], 'msg': 'field required', 'type': 'value_error.missing'}]}
+    assert response.json() == {'detail': [{'loc': ['body', 'username'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': [
+        'body', 'email'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'password'], 'msg': 'field required', 'type': 'value_error.missing'}]}
 
 
 @pytest.mark.anyio
