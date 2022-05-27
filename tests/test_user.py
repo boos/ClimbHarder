@@ -97,17 +97,26 @@ async def test_can_successfully_delete_other_user_if_admin():
     assert response.json() == ['message: test-3 deleted.']
 
 
-def test_can_get_my_user_details():
+@pytest.mark.anyio
+async def test_can_get_my_user_details():
+    ac = await test_user_login()
+
+    response = await ac.get('/user/me')
+
+    assert response.status_code == 200
+    assert response.json() == {'email': 'rmartelloni+test@gmail.com', 'username': 'test'}
+
+
+@pytest.mark.anyio
+async def test_cannot_update_other_user_details():
     pass
 
 
-def test_cannot_update_other_user_details():
+@pytest.mark.anyio
+async def test_update_user_details_if_self():
     pass
 
 
-def test_update_user_details_if_self():
-    pass
-
-
-def test_cannot_get_other_user_details_if_not_public():
+@pytest.mark.anyio
+async def test_cannot_get_other_user_details_if_not_public():
     pass
