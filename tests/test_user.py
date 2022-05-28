@@ -64,7 +64,7 @@ async def test_cannot_delete_other_user_if_not_admin():
 
 
 @pytest.mark.anyio
-async def test_can_delete_user_self():
+async def test_can_successfully_delete_user_self():
     ac = await test_user_login('test-1', 'test-1')
 
     response = await ac.delete('/user/{}'.format('test-1'))
@@ -100,15 +100,36 @@ async def test_can_get_my_user_details():
 
 
 @pytest.mark.anyio
-async def test_cannot_update_other_user_details():
-    pass
+async def test_can_successfully_get_other_user_details_if_public():
+    ac = await test_user_login()
 
-
-@pytest.mark.anyio
-async def test_update_user_details_if_self():
-    pass
+    response = a
 
 
 @pytest.mark.anyio
 async def test_cannot_get_other_user_details_if_not_public():
     pass
+
+
+@pytest.mark.anyio
+async def test_can_successfully_get_other_user_details_if_not_public_if_admin():
+    pass
+
+
+
+
+@pytest.mark.anyio
+async def test_can_successfully_update_user_details_if_self():
+    pass
+
+
+@pytest.mark.anyio
+async def test_cannot_update_other_user_details():
+    pass
+
+
+@pytest.mark.anyio
+async def test_can_successfully_update_user_details_if_admin():
+    pass
+
+

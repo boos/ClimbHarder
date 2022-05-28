@@ -1,13 +1,14 @@
-from pprint import pprint
-
-import pymongo.errors
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi import status
 from pymongo.results import DeleteResult
+import pymongo.errors
+from datetime import date, datetime
+
+from pprint import pprint
 
 from misc import nosql
 from misc.nosql import users_collection
-from models.users import User, UserIn, UserOut
+from models.users import User, UserCreation, UserOut, UserUpdate
 from routers import security
 from routers.security import oauth2_scheme
 
@@ -20,7 +21,7 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              response_model_exclude_unset=True,
              response_model_exclude_none=True,
              status_code=status.HTTP_201_CREATED)
-async def create_user(user: UserIn):
+async def create_user(user: UserCreation):
     """
     Create a user with all the information:
 
@@ -45,6 +46,8 @@ async def create_user(user: UserIn):
     """
 
     user.password = security.get_password_hash(user.password.get_secret_value())
+    if user.birthday:
+        user.birthday = datetime.combine(user.birthday, datetime.min.time())
 
     try:
         new_user = await nosql.db["users"].insert_one(user.dict(exclude_none=True,
@@ -66,8 +69,22 @@ async def create_user(user: UserIn):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             )
-async def my_user_details(current_user: UserOut = Depends(security.get_current_user)):
+async def get_my_user_details(current_user: UserOut = Depends(security.get_current_user)):
     return current_user
+
+
+@router.get("/user/{username}",
+            response_model=UserOut,
+            response_model_exclude_defaults=True,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True)
+async def get_other_user_details(username: str):
+    user = await users_collection.find_one({"username": username})
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Username not found.",
+                            headers={"WWW-Authenticate": "Bearer"})
+    return user
 
 
 @router.delete("/user/{username}")
@@ -93,24 +110,33 @@ async def delete_user(username: str, current_user: User = Depends(security.get_c
                         headers={"WWW-Authenticate": "Bearer"})
 
 
-@router.get("/user/{username}",
+
+
+@router.patch("/user/{username}",
             response_model=UserOut,
-            response_model_exclude_defaults=True,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True)
-async def user_details(username: str):
-    user = await users_collection.find_one({"username": username})
-    if not user:
+              # response_model_exclude_defaults=True,
+              # response_model_exclude_unset=True,
+               response_model_exclude_none=True
+              )
+async def patch_user_details(username: str, user: UserUpdate):
+
+    if user.password:
+        user.password = security.get_password_hash(user.password.get_secret_value())
+
+    if user.moonboard_password:
+        user.moonboard_password = user.moonboard_password.get_secret_value()
+
+    if user.birthday:
+        user.birthday = datetime.combine(user.birthday, datetime.min.time())
+
+    user_in_db = await users_collection.update_one({"username": username}, { "$set": user.dict(exclude_none=True,
+                                                                                               exclude_defaults=True,
+                                                                                               exclude_unset=True)})
+    if not user_in_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="User not found.",
+                            detail="Username not found.",
                             headers={"WWW-Authenticate": "Bearer"})
+
+    user = await users_collection.find_one({"username": username})
+
     return user
-
-
-@router.put("/user/{username}",
-            response_model=UserOut,
-            response_model_exclude_defaults=True,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True)
-async def update_user(username: str):
-    return {"message": f"{username} updated."}
