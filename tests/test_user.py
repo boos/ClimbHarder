@@ -11,7 +11,7 @@ async def test_cannot_create_user_without_username_email_password():
     data = {}
     response = await ac.post('/user', content=json.dumps(data))
     assert response.status_code == 422
-    assert response.json() == {'detail': [{'loc': ['body', 'username'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'email'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'password'], 'msg': 'field required', 'type': 'value_error.missing'}]}
+    assert response.json() == {'detail': [{'loc': ['body', 'username'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'password'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'email'], 'msg': 'field required', 'type': 'value_error.missing'}]}
 
 
 @pytest.mark.anyio
@@ -50,7 +50,7 @@ async def test_can_successfully_create_user():
     response = await ac.post('/user', content=json.dumps(data))
 
     assert response.status_code == 201
-    assert response.json() == {'email': 'rmartelloni+test-1@gmail.com', 'username': 'test-1'}
+    assert response.json() == {'email': 'rmartelloni+test-1@gmail.com', 'password': '**********','username': 'test-1'}
 
 
 @pytest.mark.anyio
@@ -81,7 +81,7 @@ async def test_can_successfully_delete_other_user_if_admin():
     response = await ac.post('/user', content=json.dumps(data))
 
     assert response.status_code == 201
-    assert response.json() == {'email': 'rmartelloni+test-3@gmail.com', 'username': 'test-3'}
+    assert response.json() == {'email': 'rmartelloni+test-3@gmail.com', 'password': '**********', 'username': 'test-3'}
 
     response = await ac.delete('/user/{}'.format('test-3'))
 
@@ -90,20 +90,18 @@ async def test_can_successfully_delete_other_user_if_admin():
 
 
 @pytest.mark.anyio
-async def test_can_get_my_user_details():
+async def test_can_successfully_get_my_user_details():
     ac = await test_user_login()
 
     response = await ac.get('/user/me')
 
     assert response.status_code == 200
-    assert response.json() == {'email': 'rmartelloni+test@gmail.com', 'username': 'test'}
+    assert response.json() == {'email': 'rmartelloni+test@gmail.com', 'password': '**********', 'username': 'test'}
 
 
 @pytest.mark.anyio
 async def test_can_successfully_get_other_user_details_if_public():
-    ac = await test_user_login()
-
-    response = a
+    pass
 
 
 @pytest.mark.anyio
@@ -114,8 +112,6 @@ async def test_cannot_get_other_user_details_if_not_public():
 @pytest.mark.anyio
 async def test_can_successfully_get_other_user_details_if_not_public_if_admin():
     pass
-
-
 
 
 @pytest.mark.anyio
@@ -131,5 +127,4 @@ async def test_cannot_update_other_user_details():
 @pytest.mark.anyio
 async def test_can_successfully_update_user_details_if_admin():
     pass
-
 
