@@ -1,37 +1,32 @@
 from pprint import pprint
 
+from httpx import AsyncClient
 from jose import jwt
 
+from main import app
 from routers import security
 
-
-async def test_authenticate_wrong_username():
-    # username: dc724af18fbdd4e59189f5fe768a5f8311527050
-    # password: 763ab79c83dc114cac76e8fafa9ca0fc0f0fc6cf
-    response = await security.verify_username('dc724af18fbdd4e59189f5fe768a5f8311527050+wrong-username')
-    assert response is False
+from tests.shared import test_user_login
 
 
-async def test_authenticate_right_username():
-    response = await security.verify_username('test')
-    assert response['username'] == 'test'
-
-
-async def test_authenticate_wrong_username_wrong_password():
-    response = await security.authenticate_user('test-wrong-username', 'test-wrong-password')
-    assert response is None
+async def test_authenticate_wrong_username_password():
+    ac = AsyncClient(app=app, base_url="http://127.0.0.1:8000")
+    response = await ac.post("/token", data={'username': 'dc724af18fbdd4e59189f5fe768a5f8311527050+wrong',
+                                             'password':'wrong-password'})
+    assert response.status_code == 401
+    assert response.json() == {'detail': 'Invalid username or password'}
 
 
 async def test_authenticate_right_username_wrong_password():
-    response = await security.authenticate_user('test',
-                                                'wrong-password')
-    assert response is None
+    ac = AsyncClient(app=app, base_url="http://127.0.0.1:8000")
+    response = await ac.post("/token", data={'username': 'test',
+                                             'password': 'test+wrong-password'})
+    assert response.status_code == 401
+    assert response.json() == {'detail': 'Invalid username or password'}
 
 
 async def test_authenticate_right_username_right_password():
-    response = await security.authenticate_user('test', 'test')
-    assert response['username'] == 'test'
-    assert response['password'] == '$2b$12$90VxnpORmw7aGWoiqPCqM.X.qN04N5qfZOuuG.r1TlP5sgllOL0Ae'
+    await test_user_login()
 
 
 def test_can_create_access_token_successfully():
