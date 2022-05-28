@@ -67,4 +67,3 @@ class UserOut(User):
 
     moonboard_username: Optional[str] = Field(title="MoonBoard username.", max_length=256)
     moonboard_password: Optional[SecretStr] = Field(title="MoonBoard password.", max_length=256)
-

@@ -110,13 +110,11 @@ async def delete_user(username: str, current_user: User = Depends(security.get_c
                         headers={"WWW-Authenticate": "Bearer"})
 
 
-
-
 @router.patch("/user/{username}",
-            response_model=UserOut,
+              response_model=UserOut,
               # response_model_exclude_defaults=True,
               # response_model_exclude_unset=True,
-               response_model_exclude_none=True
+              response_model_exclude_none=True
               )
 async def patch_user_details(username: str, user: UserUpdate):
 
@@ -129,9 +127,9 @@ async def patch_user_details(username: str, user: UserUpdate):
     if user.birthday:
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
 
-    user_in_db = await users_collection.update_one({"username": username}, { "$set": user.dict(exclude_none=True,
-                                                                                               exclude_defaults=True,
-                                                                                               exclude_unset=True)})
+    user_in_db = await users_collection.update_one({"username": username}, {"$set": user.dict(exclude_none=True,
+                                                                                              exclude_defaults=True,
+                                                                                              exclude_unset=True)})
     if not user_in_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Username not found.",
