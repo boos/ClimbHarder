@@ -101,30 +101,35 @@ async def test_can_successfully_get_my_user_details():
 
 @pytest.mark.anyio
 async def test_can_successfully_get_other_user_details_if_public():
+    # TODO
     pass
 
 
 @pytest.mark.anyio
 async def test_cannot_get_other_user_details_if_not_public():
+    # TODO
     pass
 
 
 @pytest.mark.anyio
 async def test_can_successfully_get_other_user_details_if_not_public_if_admin():
+    # TODO
     pass
 
 
 @pytest.mark.anyio
 async def test_can_successfully_update_user_details_if_self():
+    # TODO
     pass
 
 
 @pytest.mark.anyio
 async def test_cannot_update_other_user_details():
+    # TODO
     pass
 
 
 @pytest.mark.anyio
 async def test_can_successfully_update_user_details_if_admin():
+    # TODO
     pass
-
