@@ -127,10 +127,10 @@ async def patch_user_details(username: str, user: UserUpdate,
 
     try:
         user_from_db = await users_collection.find_one_and_update({"username": username},
-                                                          {"$set": user.dict(exclude_none=True,
-                                                                             exclude_defaults=True,
-                                                                             exclude_unset=True)},
-                                                          return_document=ReturnDocument.AFTER)
+                                                                  {"$set": user.dict(exclude_none=True,
+                                                                                     exclude_defaults=True,
+                                                                                     exclude_unset=True)},
+                                                                  return_document=ReturnDocument.AFTER)
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Unable to update '{}': User not found.".format(username),

@@ -16,7 +16,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes="bcrypt", deprecated="auto")
 
 
-def get_password_hash (password: str):
+def get_password_hash(password: str):
     return pwd_context.hash(password)
 
 
