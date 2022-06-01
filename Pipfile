@@ -11,6 +11,7 @@ passlib = "*"
 motor = "*"
 email-validator = "*"
 bcrypt = "*"
+httpx = "*"
 
 [dev-packages]
 

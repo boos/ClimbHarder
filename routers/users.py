@@ -1,16 +1,15 @@
+from datetime import datetime
+
+import pymongo.errors
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi import status
-from pymongo.results import DeleteResult
-import pymongo.errors
-from datetime import date, datetime
+from pymongo import ReturnDocument
 
-from pprint import pprint
-
+import misc.security
 from misc import nosql
 from misc.nosql import users_collection
-from models.users import User, UserCreation, UserOut, UserUpdate
-from routers import security
-from routers.security import oauth2_scheme
+from misc.security import oauth2_scheme
+from models.users import UserCreation, UserOut, UserUpdate
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
@@ -45,7 +44,7 @@ async def create_user(user: UserCreation):
     - **moonboard_username**: each user might define he/she moonboard password
     """
 
-    user.password = security.get_password_hash(user.password.get_secret_value())
+    user.password = misc.security.get_password_hash(user.password.get_secret_value())
     if user.birthday:
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
 
@@ -69,7 +68,7 @@ async def create_user(user: UserCreation):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             )
-async def get_my_user_details(current_user: UserOut = Depends(security.get_current_user)):
+async def get_my_user_details(current_user: dict = Depends(misc.security.get_current_user)):
     return current_user
 
 
@@ -88,40 +87,37 @@ async def get_other_user_details(username: str):
 
 
 @router.delete("/user/{username}")
-async def delete_user(username: str, current_user: User = Depends(security.get_current_user)):
+async def delete_user(username: str, current_user: dict = Depends(misc.security.get_current_user)):
 
-    response_status: DeleteResult = None
+    if misc.security.is_entitled(username, current_user) is False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Unable to delete '{}': Unauthorized.".format(username),
+                            headers={"WWW-Authenticate": "Bearer"})
 
-    if 'is_admin' in current_user and current_user['is_admin'] is True:
-        response_status = await users_collection.delete_one({"username": username})
-        if response_status.deleted_count == 0:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Unable to delete '{}': User not found.".format(username),
-                                headers={"WWW-Authenticate": "Bearer"})
+    response_status = await users_collection.delete_one({"username": username})
+    if response_status.deleted_count == 0:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Unable to delete '{}': User not found.".format(username),
+                            headers={"WWW-Authenticate": "Bearer"})
 
-        return {"message: {} deleted.".format(username)}
-
-    if username == current_user['username']:
-        await users_collection.delete_one({"username": username})
-        return {"message: {} deleted.".format(username)}
-
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Unable to delete '{}': Unauthorized.".format(username),
-                        headers={"WWW-Authenticate": "Bearer"})
-
-
+    return {"message: {} deleted.".format(username)}
 
 
 @router.patch("/user/{username}",
-            response_model=UserOut,
-              # response_model_exclude_defaults=True,
-              # response_model_exclude_unset=True,
-               response_model_exclude_none=True
-              )
-async def patch_user_details(username: str, user: UserUpdate):
+              response_model=UserOut,
+              response_model_exclude_defaults=True,
+              response_model_exclude_unset=True,
+              response_model_exclude_none=True)
+async def patch_user_details(username: str, user: UserUpdate,
+                             current_user: str = Depends(misc.security.get_current_user)):
+
+    if misc.security.is_entitled(username, current_user) is False:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Unable to update '{}': Unauthorized.".format(username),
+                            headers={"WWW-Authenticate": "Bearer"})
 
     if user.password:
-        user.password = security.get_password_hash(user.password.get_secret_value())
+        user.password = misc.security.get_password_hash(user.password.get_secret_value())
 
     if user.moonboard_password:
         user.moonboard_password = user.moonboard_password.get_secret_value()
@@ -129,14 +125,15 @@ async def patch_user_details(username: str, user: UserUpdate):
     if user.birthday:
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
 
-    user_in_db = await users_collection.update_one({"username": username}, { "$set": user.dict(exclude_none=True,
-                                                                                               exclude_defaults=True,
-                                                                                               exclude_unset=True)})
-    if not user_in_db:
+    try:
+        user_from_db = await users_collection.find_one_and_update({"username": username},
+                                                          {"$set": user.dict(exclude_none=True,
+                                                                             exclude_defaults=True,
+                                                                             exclude_unset=True)},
+                                                          return_document=ReturnDocument.AFTER)
+    except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Username not found.",
+                            detail="Unable to update '{}': User not found.".format(username),
                             headers={"WWW-Authenticate": "Bearer"})
 
-    user = await users_collection.find_one({"username": username})
-
-    return user
+    return user_from_db

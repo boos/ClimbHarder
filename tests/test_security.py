@@ -3,6 +3,7 @@ from pprint import pprint
 from httpx import AsyncClient
 from jose import jwt
 
+import misc.security
 from main import app
 from routers import security
 
@@ -31,9 +32,9 @@ async def test_authenticate_right_username_right_password():
 
 def test_can_create_access_token_successfully():
     user = {'username': 'test_user', 'password': 'test_password'}
-    access_token = security.create_access_token(data={"sub": user['username']})
+    access_token = misc.security.create_access_token(data={"sub": user['username']})
 
-    creds = jwt.decode(access_token, str(security.SECRET_KEY), algorithms=[security.ALGORITHM])
+    creds = jwt.decode(access_token, str(misc.security.SECRET_KEY), algorithms=[misc.security.ALGORITHM])
     pprint(creds)
     assert creds.get("sub") is not None
     assert creds["sub"] == user['username']
