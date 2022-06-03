@@ -31,17 +31,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-def is_entitled(username, current_user) -> bool:
-
-    if 'is_admin' in current_user and current_user['is_admin'] is True:
-        return True
-
-    if username.lower() == current_user['username'].lower():
-        return True
-
-    return False
-
-
 async def verify_username(username: str):
     user = await users_collection.find_one({"username": username})
     if user is None:

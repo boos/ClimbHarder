@@ -14,7 +14,7 @@ from models.users import UserCreation, UserOut, UserUpdate
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
 
-@router.post("/user",
+@router.post("/users",
              response_model=UserOut,
              response_model_exclude_defaults=True,
              response_model_exclude_unset=True,
@@ -62,7 +62,7 @@ async def create_user(user: UserCreation):
     return user
 
 
-@router.get("/user/me",
+@router.get("/users/me",
             response_model=UserOut,
             response_model_exclude_defaults=True,
             response_model_exclude_unset=True,
@@ -72,13 +72,14 @@ async def get_my_user_details(current_user: dict = Depends(misc.security.get_cur
     return current_user
 
 
-@router.get("/user/{username}",
+@router.get("/users/{username}",
             response_model=UserOut,
             response_model_exclude_defaults=True,
             response_model_exclude_unset=True,
             response_model_exclude_none=True)
 async def get_other_user_details(username: str):
-    user = await users_collection.find_one({"username": username})
+
+    user = await users_collection.find_one({"username":  username})
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Username not found.",
@@ -86,35 +87,24 @@ async def get_other_user_details(username: str):
     return user
 
 
-@router.delete("/user/{username}")
-async def delete_user(username: str, current_user: dict = Depends(misc.security.get_current_user)):
+@router.delete("/users/me")
+async def delete_user(current_user: dict = Depends(misc.security.get_current_user)):
 
-    if misc.security.is_entitled(username, current_user) is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unable to delete '{}': Unauthorized.".format(username),
-                            headers={"WWW-Authenticate": "Bearer"})
-
-    response_status = await users_collection.delete_one({"username": username})
+    response_status = await users_collection.delete_one({"username": current_user['username']})
     if response_status.deleted_count == 0:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unable to delete '{}': User not found.".format(username),
+                            detail="Unable to delete '{}': User not found.".format(current_user['username']),
                             headers={"WWW-Authenticate": "Bearer"})
 
-    return {"message: {} deleted.".format(username)}
+    return {"message: {} deleted.".format(current_user['username'])}
 
 
-@router.patch("/user/{username}",
+@router.patch("/users/me",
               response_model=UserOut,
               response_model_exclude_defaults=True,
               response_model_exclude_unset=True,
               response_model_exclude_none=True)
-async def patch_user_details(username: str, user: UserUpdate,
-                             current_user: str = Depends(misc.security.get_current_user)):
-
-    if misc.security.is_entitled(username, current_user) is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unable to update '{}': Unauthorized.".format(username),
-                            headers={"WWW-Authenticate": "Bearer"})
+async def patch_user_details(user: UserUpdate, current_user: dict = Depends(misc.security.get_current_user)):
 
     if user.password:
         user.password = misc.security.get_password_hash(user.password.get_secret_value())
@@ -126,14 +116,14 @@ async def patch_user_details(username: str, user: UserUpdate,
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
 
     try:
-        user_from_db = await users_collection.find_one_and_update({"username": username},
-                                                          {"$set": user.dict(exclude_none=True,
-                                                                             exclude_defaults=True,
-                                                                             exclude_unset=True)},
-                                                          return_document=ReturnDocument.AFTER)
+        user_from_db = await users_collection.find_one_and_update({"username": current_user['username']},
+                                                                  {"$set": user.dict(exclude_none=True,
+                                                                                     exclude_defaults=True,
+                                                                                     exclude_unset=True)},
+                                                                  return_document=ReturnDocument.AFTER)
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unable to update '{}': User not found.".format(username),
+                            detail="Unable to update '{}': User not found.".format(current_user['username']),
                             headers={"WWW-Authenticate": "Bearer"})
 
     return user_from_db

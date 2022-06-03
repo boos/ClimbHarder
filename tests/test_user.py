@@ -9,7 +9,7 @@ async def test_cannot_create_user_without_username_email_password():
     ac = await test_user_login()
 
     data = {}
-    response = await ac.post('/user', content=json.dumps(data))
+    response = await ac.post('/users', content=json.dumps(data))
     assert response.status_code == 422
     assert response.json() == {'detail': [{'loc': ['body', 'username'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'password'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'email'], 'msg': 'field required', 'type': 'value_error.missing'}]}
 
@@ -19,7 +19,7 @@ async def test_cannot_create_user_existing_username():
     ac = await test_user_login()
 
     data = {'username': 'test', 'password': 'test', 'email': 'rmartelloni+test@gmail.com'}
-    response = await ac.post('/user', content=json.dumps(data))
+    response = await ac.post('/users', content=json.dumps(data))
     assert response.status_code == 409
     assert response.json() == {'detail': 'Username already in use, choose another username.'}
 
@@ -36,7 +36,7 @@ async def test_cannot_create_user_existing_email():
     random_username = ''.join(random.choice(letters) for i in range(64))
 
     data = {'username': random_username, 'password': 'test', 'email': 'rmartelloni+test@gmail.com'}
-    response = await ac.post('/user', content=json.dumps(data))
+    response = await ac.post('/users', content=json.dumps(data))
 
     assert response.status_code == 409
     assert response.json() == {'detail': 'Email already in use, choose another email.'}
@@ -46,90 +46,70 @@ async def test_cannot_create_user_existing_email():
 async def test_can_successfully_create_user():
     ac = await test_user_login()
 
-    data = {'username': 'test-1', 'password': 'test-1', 'email': 'rmartelloni+test-1@gmail.com'}
-    response = await ac.post('/user', content=json.dumps(data))
+    data = {'username': 'test-1', 'password': 'test-1', 'email': 'rmartelloni+test-1@gmail.com', }
+    response = await ac.post('/users', content=json.dumps(data))
 
     assert response.status_code == 201
     assert response.json() == {'email': 'rmartelloni+test-1@gmail.com', 'password': '**********','username': 'test-1'}
 
 
 @pytest.mark.anyio
-async def test_cannot_delete_other_user_if_not_admin():
-    ac = await test_user_login('test', 'test')
-
-    response = await ac.delete('/user/{}'.format('test-3'))
-
-    assert response.status_code == 401
-    assert response.json() == {'detail': "Unable to delete 'test-3': Unauthorized."}
-
-
-@pytest.mark.anyio
 async def test_can_successfully_delete_user_self():
     ac = await test_user_login('test-1', 'test-1')
 
-    response = await ac.delete('/user/{}'.format('test-1'))
+    response = await ac.delete('/users/me'.format('test-1'))
 
     assert response.status_code == 200
     assert response.json() == ['message: test-1 deleted.']
 
 
 @pytest.mark.anyio
-async def test_can_successfully_delete_other_user_if_admin():
-    ac = await test_user_login('iRockClimb', 'climbing')
-
-    data = {'username': 'test-3', 'password': 'test-3', 'email': 'rmartelloni+test-3@gmail.com'}
-    response = await ac.post('/user', content=json.dumps(data))
-
-    assert response.status_code == 201
-    assert response.json() == {'email': 'rmartelloni+test-3@gmail.com', 'password': '**********', 'username': 'test-3'}
-
-    response = await ac.delete('/user/{}'.format('test-3'))
-
-    assert response.status_code == 200
-    assert response.json() == ['message: test-3 deleted.']
-
-
-@pytest.mark.anyio
 async def test_can_successfully_get_my_user_details():
     ac = await test_user_login()
 
-    response = await ac.get('/user/me')
+    response = await ac.get('/users/me')
+    data = response.json()
 
     assert response.status_code == 200
-    assert response.json() == {'email': 'rmartelloni+test@gmail.com', 'password': '**********', 'username': 'test'}
+    assert data['email'] == 'rmartelloni+test@gmail.com'
+    assert data['password'] == '**********'
+    assert data['username'] == 'test'
 
 
 @pytest.mark.anyio
-async def test_can_successfully_get_other_user_details_if_public():
-    # TODO
-    pass
+async def test_can_successfully_get_other_user_details():
 
+    ac = await test_user_login()
 
-@pytest.mark.anyio
-async def test_cannot_get_other_user_details_if_not_public():
-    # TODO
-    pass
+    response = await ac.get('/users/iRockClimb')
 
-
-@pytest.mark.anyio
-async def test_can_successfully_get_other_user_details_if_not_public_if_admin():
-    # TODO
-    pass
+    assert response.status_code == 200
+    assert response.json()['username'] == 'iRockClimb'
 
 
 @pytest.mark.anyio
 async def test_can_successfully_update_user_details_if_self():
-    # TODO
-    pass
+    ac = await test_user_login()
 
+    data = {
+        "name": "Climbing",
+        "surname": "Machine",
+        "bio": "Incredible Climbing Machine",
+        "sex": "Male",
+        "birthday": "2020-09-15",
+        "location": "Zurich",
+        "country": "Switzerland",
+        "bouldering": True,
+        "sport_climbing": False,
+        "moonboard_username": "Ponzio",
+        "moonboard_password": "Pilato"
+    }
 
-@pytest.mark.anyio
-async def test_cannot_update_other_user_details():
-    # TODO
-    pass
+    response = await ac.patch('/users/me', content=json.dumps(data))
 
-
-@pytest.mark.anyio
-async def test_can_successfully_update_user_details_if_admin():
-    # TODO
-    pass
+    data['username'] = 'test'
+    data['password'] = '**********'
+    data['moonboard_password'] = '**********'
+    data['email'] = 'rmartelloni+test@gmail.com'
+    assert response.status_code == 200
+    assert response.json() == data
