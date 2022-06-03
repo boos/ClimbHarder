@@ -44,6 +44,8 @@ async def create_user(user: UserCreation):
     - **moonboard_username**: each user might define he/she moonboard password
     """
 
+    # TODO: ensure that users can only be created after email verification
+
     user.password = misc.security.get_password_hash(user.password.get_secret_value())
     if user.birthday:
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
