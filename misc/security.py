@@ -36,7 +36,7 @@ def is_entitled(username, current_user) -> bool:
     if 'is_admin' in current_user and current_user['is_admin'] is True:
         return True
 
-    if username == current_user['username']:
+    if username.lower() == current_user['username'].lower():
         return True
 
     return False
