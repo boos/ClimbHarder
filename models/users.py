@@ -67,5 +67,3 @@ class UserInUpdateOnDB(UserIn):
 
     class Config:
         extra = "forbid"
-
-
