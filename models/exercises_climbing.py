@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 
 from bson import ObjectId
@@ -64,3 +65,10 @@ class ClimbingExerciseIn(BaseModel):
 class ClimbingExerciseOut(ClimbingExerciseIn):
 
     load: float = Field(title='The estimated load of the exercise.')
+    when: datetime = Field(title="Date and time of when the exercise has been done.")
+
+
+class ClimbingExerciseOnDB(ClimbingExerciseOut):
+
+    username: str = Field(..., title="The username.", max_length=64)
+
