@@ -55,12 +55,14 @@ async def create_user(user: UserCreation):
                                                                 exclude_defaults=True,
                                                                 exclude_unset=True))
     except pymongo.errors.DuplicateKeyError as err:
+
         if err.__str__().find("username") != -1:
-            raise HTTPException(
-                status_code=409, detail="Username already in use, choose another username.")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail="Username already in use, choose another username.")
+
         if err.__str__().find("email") != -1:
-            raise HTTPException(
-                status_code=409, detail="Email already in use, choose another email.")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail="Email already in use, choose another email.")
     return user
 
 
