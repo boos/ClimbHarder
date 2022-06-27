@@ -62,7 +62,7 @@ async def add_climbing_exercise_to_workout(year, month, day, hour, minute,
                                                 sent=climbing_exercise.sent,
                                                 load=load,
                                                 when=datetime.datetime(int(year), int(month), int(day),
-                                                                                  int(hour), int(minute)))
+                                                                       int(hour), int(minute)))
 
     climbing_exercise_out_on_db = ClimbingExerciseOnDB(grade=climbing_exercise.grade,
                                                        moves=climbing_exercise.moves,

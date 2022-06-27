@@ -71,4 +71,3 @@ class ClimbingExerciseOut(ClimbingExerciseIn):
 class ClimbingExerciseOnDB(ClimbingExerciseOut):
 
     username: str = Field(..., title="The username.", max_length=64)
-
