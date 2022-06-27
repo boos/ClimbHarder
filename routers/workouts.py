@@ -29,29 +29,27 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
     load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
     climbing_exercise_out = ClimbingExerciseOut(grade=climbing_exercise.grade, moves=climbing_exercise.moves,
                                                 total_moves=climbing_exercise.total_moves, sent=climbing_exercise.sent,
-                                                load=load, when=datetime.datetime.now())
+                                                load=load, when=when)
 
     climbing_exercise_out_on_db = ClimbingExerciseOnDB(grade=climbing_exercise.grade,
                                                        moves=climbing_exercise.moves,
                                                        total_moves=climbing_exercise.total_moves,
                                                        sent=climbing_exercise.sent,
                                                        load=load,
-                                                       when=datetime.datetime.now(),
+                                                       when=when,
                                                        username=current_user['username'])
-    from pprint import pprint
-    pprint(climbing_exercise_out_on_db)
 
     return climbing_exercise_out
 
 
-@router.post("/workouts/{year}/{month}/{day}/{hour}/{minute}",
+@router.post('/workouts/{year}/{month}/{day}/{hour}/{minute}',
              response_model=ClimbingExerciseOut,
              response_model_exclude_none=True,
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
              status_code=status.HTTP_201_CREATED)
-async def add_climbing_exercise_to_workout(year, month, day, hour, minute,
-                                           climbing_exercise: ClimbingExerciseIn,
+async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn,
+                                           year, month, day, hour, minute,
                                            current_user: dict = Depends(security.get_current_user)):
     """ TODO: Add a climbing exercise to a specific workout done has specified."""
 
@@ -62,7 +60,7 @@ async def add_climbing_exercise_to_workout(year, month, day, hour, minute,
                                                 sent=climbing_exercise.sent,
                                                 load=load,
                                                 when=datetime.datetime(int(year), int(month), int(day),
-                                                                                  int(hour), int(minute)))
+                                                                       int(hour), int(minute)))
 
     climbing_exercise_out_on_db = ClimbingExerciseOnDB(grade=climbing_exercise.grade,
                                                        moves=climbing_exercise.moves,
@@ -72,7 +70,5 @@ async def add_climbing_exercise_to_workout(year, month, day, hour, minute,
                                                        when=datetime.datetime(int(year), int(month), int(day),
                                                                               int(hour), int(minute)),
                                                        username=current_user['username'])
-    from pprint import pprint
-    pprint(climbing_exercise_out_on_db)
 
     return climbing_exercise_out
