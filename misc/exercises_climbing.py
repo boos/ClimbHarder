@@ -33,4 +33,3 @@ def compute_climbing_exercise_load(climbing_exercise: ClimbingExerciseIn):
 
     load = (loads[climbing_exercise.grade.value]/climbing_exercise.total_moves)*climbing_exercise.moves
     return round(load, 2)
-

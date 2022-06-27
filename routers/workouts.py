@@ -30,5 +30,4 @@ async def add_climbing_exercise_to_workout(year, month, day, hour, minute,
                                                 total_moves=climbing_exercise.total_moves, sent=climbing_exercise.sent,
                                                 load=load)
 
-
     return climbing_exercise_out
