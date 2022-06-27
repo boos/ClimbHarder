@@ -9,7 +9,7 @@ import misc.security
 from misc import nosql
 from misc.nosql import users_collection
 from misc.security import oauth2_scheme
-from models.users import UserCreation, UserOut, UserUpdate
+from models.users import UserOnDB, UserOut, UserInUpdateOnDB
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
@@ -20,7 +20,7 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              response_model_exclude_unset=True,
              response_model_exclude_none=True,
              status_code=status.HTTP_201_CREATED)
-async def create_user(user: UserCreation):
+async def create_user(user: UserOnDB):
     """
     Create a user with all the information:
 
@@ -108,7 +108,7 @@ async def delete_user(current_user: dict = Depends(misc.security.get_current_use
               response_model_exclude_defaults=True,
               response_model_exclude_unset=True,
               response_model_exclude_none=True)
-async def patch_user_details(user: UserUpdate, current_user: dict = Depends(misc.security.get_current_user)):
+async def patch_user_details(user: UserInUpdateOnDB, current_user: dict = Depends(misc.security.get_current_user)):
 
     if user.password:
         user.password = misc.security.get_password_hash(user.password.get_secret_value())

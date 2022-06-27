@@ -12,7 +12,7 @@ class Gender(str, Enum):
     non_binary = "Non-binary"
 
 
-class User(BaseModel):
+class UserIn(BaseModel):
     """ Base User Class """
 
     name: Optional[str] = Field(title="The name of the user.", max_length=256)
@@ -32,7 +32,17 @@ class User(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-class UserCreation(User):
+class UserOut(UserIn):
+    username: str = Field(..., title="The username.", max_length=64)
+    password: Optional[SecretStr] = Field(title="The ClimbHarder password.", max_length=256)
+
+    email: EmailStr = Field(..., title="The email address of the user.")
+
+    moonboard_username: Optional[str] = Field(title="MoonBoard username.", max_length=256)
+    moonboard_password: Optional[SecretStr] = Field(title="MoonBoard password.", max_length=256)
+
+
+class UserOnDB(UserIn):
     """ """
 
     username: str = Field(..., title="The username.", max_length=64)
@@ -47,7 +57,7 @@ class UserCreation(User):
         extra = "forbid"
 
 
-class UserUpdate(User):
+class UserInUpdateOnDB(UserIn):
     """ """
 
     password: Optional[SecretStr] = Field(title="The ClimbHarder password.", max_length=256)
@@ -58,13 +68,4 @@ class UserUpdate(User):
     class Config:
         extra = "forbid"
 
-
-class UserOut(User):
-    username: str = Field(..., title="The username.", max_length=64)
-    password: Optional[SecretStr] = Field(title="The ClimbHarder password.", max_length=256)
-
-    email: EmailStr = Field(..., title="The email address of the user.")
-
-    moonboard_username: Optional[str] = Field(title="MoonBoard username.", max_length=256)
-    moonboard_password: Optional[SecretStr] = Field(title="MoonBoard password.", max_length=256)
 
