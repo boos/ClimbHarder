@@ -128,7 +128,7 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
 async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn,
                                            year, month, day, hour, minute,
                                            current_user: dict = Depends(security.get_current_user)):
-    """ TODO: Add a climbing exercise to a specific workout done as specified."""
+    """ Add a climbing exercise to a specific workout done as specified."""
 
     load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
 
