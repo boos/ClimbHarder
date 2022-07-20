@@ -72,3 +72,6 @@ class ClimbingExerciseOnDB(ClimbingExerciseOut):
 
     username: str = Field(..., title="The username.", max_length=64)
 
+    class Config:
+        use_enum_values = True
+

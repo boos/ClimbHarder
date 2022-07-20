@@ -4,7 +4,7 @@ from models.exercises_climbing import ClimbingExerciseIn
 
 
 def compute_climbing_exercise_load(climbing_exercise: ClimbingExerciseIn):
-    """ Compute the estimated load """
+    """ Compute the estimated load based on the grade climbed, total number of moves, and moves done. """
     loads = {'4a': 4, '4a+': 4.15, '4b': 4.3, '4b+': 4.45, '4c': 4.6, '4c+': 4.75,
              '5a': 5, '5a+': 5.15, '5b': 5.3, '5b+': 5.45, '5c': 5.6, '5c+': 5.75,
              '6a': 6, '6a+': 6.15, '6b': 6.3, '6b+': 6.45, '6c': 6.6, '6c+': 6.75,
@@ -34,3 +34,27 @@ def compute_climbing_exercise_load(climbing_exercise: ClimbingExerciseIn):
     load = (loads[climbing_exercise.grade.value]/climbing_exercise.total_moves)*climbing_exercise.moves
     return round(load, 2)
 
+
+async def build_workout_details(response_cursor):
+    """ Build a dict containing all exercises in sequence plus total work and number of exercises """
+
+    exercises = dict()
+    exercises['climbing_exercises'] = list()
+    exercises['total_load'] = 0
+
+    for exercise in await response_cursor.to_list(length=256):
+
+        exercise.pop('_id', None)
+        exercise.pop('username', None)
+        exercise.pop('month', None)
+        exercise.pop('day', None)
+        exercise.pop('hour', None)
+
+        exercises['climbing_exercises'].append(exercise)
+
+        exercises['total_load'] = exercises['total_load'] + exercise['load']
+
+    exercises['total_load'] = round(exercises['total_load'], 2)
+    exercises['number_of_climbing_exercises'] = len(exercises['climbing_exercises'])
+
+    return exercises
