@@ -74,4 +74,3 @@ class ClimbingExerciseOnDB(ClimbingExerciseOut):
 
     class Config:
         use_enum_values = True
-
