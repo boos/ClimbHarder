@@ -13,15 +13,15 @@ router = APIRouter(dependencies=[Depends(security.oauth2_scheme)])
 async def get_workout_details(year, month, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
-    response_cursor = nosql.workouts_collection.aggregate([{ '$match': {'username': current_user["username"]}},
-                                                           { '$project': { 'grade': 1, 'sent': 1, 'load': 1,
-                                                                           'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                           '_id': 0,
-                                                                           'year': {'$year': '$when'},
-                                                                           'month': {'$month': '$when'}}},
+    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                         '_id': 0,
+                                                                         'year': {'$year': '$when'},
+                                                                         'month': {'$month': '$when'}}},
                                                            {'$match': {'year': {'$eq': int(year)},
                                                                        'month': {'$eq': int(month)}}},
-                                                           { '$sort': { 'when': 1}}])
+                                                           {'$sort': {'when': 1}}])
 
     exercises = await build_workout_details(response_cursor)
 
@@ -32,17 +32,17 @@ async def get_workout_details(year, month, current_user: dict = Depends(security
 async def get_workout_details(year, month, day, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day """
 
-    response_cursor = nosql.workouts_collection.aggregate([{ '$match': {'username': current_user["username"]}},
-                                                           { '$project': { 'grade': 1, 'sent': 1, 'load': 1,
-                                                                           'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                           '_id': 0,
-                                                                           'year': {'$year': '$when'},
-                                                                           'month': {'$month': '$when'},
-                                                                           'day': {'$dayOfMonth': '$when'}}},
+    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                         '_id': 0,
+                                                                         'year': {'$year': '$when'},
+                                                                         'month': {'$month': '$when'},
+                                                                         'day': {'$dayOfMonth': '$when'}}},
                                                            {'$match': {'year': {'$eq': int(year)},
                                                                        'month': {'$eq': int(month)},
                                                                        'day': {'$eq': int(day)}}},
-                                                           { '$sort': { 'when': 1}}])
+                                                           {'$sort': {'when': 1}}])
 
     exercises = await build_workout_details(response_cursor)
 
@@ -56,19 +56,19 @@ async def get_workout_details(year, month, day, hour, current_user: dict = Depen
     when = datetime.datetime(int(year), int(month), int(day),
                              int(hour))
 
-    response_cursor = nosql.workouts_collection.aggregate([{ '$match': {'username': current_user["username"]}},
-                                                           { '$project': { 'grade': 1, 'sent': 1, 'load': 1,
-                                                                           'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                           '_id': 0,
-                                                                           'year': { '$year': '$when'},
-                                                                           'month': { '$month': '$when'},
-                                                                           'day': {'$dayOfMonth': '$when'},
-                                                                           'hour': {'$hour': '$when'}}},
-                                                           { '$match': { 'year': { '$eq': int(year)},
-                                                                         'month': { '$eq': int(month)},
-                                                                         'day': { '$eq': int(day)},
-                                                                         'hour': {'$eq': int(hour)}}},
-                                                           { '$sort': { 'when': 1}}])
+    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                         '_id': 0,
+                                                                         'year': {'$year': '$when'},
+                                                                         'month': {'$month': '$when'},
+                                                                         'day': {'$dayOfMonth': '$when'},
+                                                                         'hour': {'$hour': '$when'}}},
+                                                           {'$match': {'year': {'$eq': int(year)},
+                                                                       'month': {'$eq': int(month)},
+                                                                       'day': {'$eq': int(day)},
+                                                                       'hour': {'$eq': int(hour)}}},
+                                                           {'$sort': {'when': 1}}])
 
     exercises = await build_workout_details(response_cursor)
 
@@ -82,7 +82,8 @@ async def get_workout_details(year, month, day, hour, minute, current_user: dict
     when = datetime.datetime(int(year), int(month), int(day),
                              int(hour), int(minute))
 
-    response_cursor = nosql.workouts_collection.find({'username': current_user["username"], 'when': when}).sort('when', 1)
+    response_cursor = nosql.workouts_collection.find(
+        {'username': current_user["username"], 'when': when}).sort('when', 1)
 
     exercises = await build_workout_details(response_cursor)
 
