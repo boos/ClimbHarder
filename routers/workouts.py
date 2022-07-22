@@ -9,15 +9,32 @@ from models.exercises_climbing import ClimbingExerciseIn, ClimbingExerciseOut, C
 router = APIRouter(dependencies=[Depends(security.oauth2_scheme)])
 
 
+@router.get("/workouts/{year}/", status_code=status.HTTP_200_OK)
+async def get_workout_details(year, current_user: dict = Depends(security.get_current_user)):
+    """ Return workout details within a specified year """
+
+    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                         '_id': 0,
+                                                                         'year': {'$year': '$when'}}},
+                                                           {'$match': {'year': {'$eq': int(year)}}},
+                                                           {'$sort': {'when': 1}}])
+
+    exercises = await build_workout_details(response_cursor)
+
+    return exercises
+
+
 @router.get("/workouts/{year}/{month}", status_code=status.HTTP_200_OK)
 async def get_workout_details(year, month, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
-    response_cursor = nosql.workouts_collection.aggregate([{ '$match': {'username': current_user["username"]}},
-                                                           { '$project': { 'grade': 1, 'sent': 1, 'load': 1,
-                                                                           'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                           '_id': 0,
-                                                                           'year': {'$year': '$when'},
+    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                         '_id': 0,
+                                                                         'year': {'$year': '$when'},
                                                                            'month': {'$month': '$when'}}},
                                                            {'$match': {'year': {'$eq': int(year)},
                                                                        'month': {'$eq': int(month)}}},

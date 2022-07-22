@@ -40,17 +40,33 @@ async def build_workout_details(response_cursor):
 
     exercises = dict()
     exercises['climbing_exercises'] = list()
+    exercises['distribution_of_climbing_exercises'] = dict()
     exercises['total_load'] = 0
 
     for exercise in await response_cursor.to_list(length=256):
 
         exercise.pop('_id', None)
         exercise.pop('username', None)
+        exercise.pop('year', None)
         exercise.pop('month', None)
         exercise.pop('day', None)
         exercise.pop('hour', None)
 
         exercises['climbing_exercises'].append(exercise)
+
+        if exercise['grade'] not in exercises['distribution_of_climbing_exercises']:
+            exercises['distribution_of_climbing_exercises'][exercise['grade']] = dict()
+
+        if exercise['sent']:
+            if 'sent' not in exercises['distribution_of_climbing_exercises'][exercise['grade']]:
+                exercises['distribution_of_climbing_exercises'][exercise['grade']]['sent'] = 1
+            else:
+                exercises['distribution_of_climbing_exercises'][exercise['grade']]['sent'] += 1
+        else:
+            if 'moves' not in exercises['distribution_of_climbing_exercises'][exercise['grade']]:
+                exercises['distribution_of_climbing_exercises'][exercise['grade']]['moves'] = list()
+            exercises['distribution_of_climbing_exercises'][exercise['grade']]['moves'].append((
+                exercise['moves'], exercise['total_moves']))
 
         exercises['total_load'] = exercises['total_load'] + exercise['load']
 
