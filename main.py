@@ -12,4 +12,4 @@ app.include_router(workouts.router)
 
 @app.get("/")
 async def root():
-    return {"message": "I am ClimbHarder, and I you will climb HARDER!"}
+    return {"message": "I am ClimbHarder, and I will make you climb HARDER!"}
