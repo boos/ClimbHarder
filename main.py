@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import RedirectResponse
 from routers import users, security, workouts
 
 app = FastAPI()
@@ -10,6 +11,7 @@ app.include_router(security.router)
 app.include_router(workouts.router)
 
 
-@app.get("/")
+@app.get("/", response_class=RedirectResponse, status_code=301)
 async def root():
-    return {"message": "I am ClimbHarder, and I will make you climb HARDER!"}
+    return "/docs"
+    # return {"message": "I am ClimbHarder, and I will make you climb HARDER!"}
