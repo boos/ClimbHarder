@@ -8,7 +8,8 @@ MONGODB_SERVER = os.getenv("MONGODB_SERVER")
 MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
 MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
 
-MONGODB_CONNECTION_STRING = "mongodb+srv://{}:{}@{}/?retryWrites=true&w=majority".format(MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_SERVER)
+MONGODB_CONNECTION_STRING = "mongodb+srv://{}:{}@{}/?retryWrites=true&w=majority".format(
+    MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_SERVER)
 
 db = motor_asyncio.AsyncIOMotorClient(MONGODB_CONNECTION_STRING).get_database("ClimbHarder")
 users_collection: Collection = db.get_collection("users")
