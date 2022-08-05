@@ -12,6 +12,7 @@ from misc.security import oauth2_scheme
 from models.users import UserOnDB, UserOut, UserInUpdateOnDB
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
+router = APIRouter()
 
 
 @router.post("/users",
