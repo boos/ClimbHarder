@@ -45,12 +45,13 @@ async def build_workout_details(response_cursor):
 
     for exercise in await response_cursor.to_list(length=256):
 
-        exercise.pop('_id', None)
+        exercise['_id'] = str(exercise['_id'])
         exercise.pop('username', None)
         exercise.pop('year', None)
         exercise.pop('month', None)
         exercise.pop('day', None)
         exercise.pop('hour', None)
+        exercise.pop('minute', None)
 
         exercises['climbing_exercises'].append(exercise)
 
