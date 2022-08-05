@@ -13,5 +13,5 @@ app.include_router(workouts.router)
 
 @app.get("/", response_class=RedirectResponse, status_code=301)
 async def root():
-    return "/docs"
-    # return {"message": "I am ClimbHarder, and I will make you climb HARDER!"}
+    # return "/docs"
+    return {"message": "I am ClimbHarder, and I will make you climb HARDER!"}
