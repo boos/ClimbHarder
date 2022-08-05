@@ -4,9 +4,9 @@ from bson import ObjectId
 from motor import motor_asyncio
 from pymongo.collection import Collection
 
-MONGODB_SERVER = os.getenv(MONGODB_SERVER)
-MONGODB_USERNAME = os.getenv(MONGODB_USERNAME)
-MONGODB_PASSWORD = os.getenv(MONGODB_PASSWORD)
+MONGODB_SERVER = os.getenv("MONGODB_SERVER")
+MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
+MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
 
 MONGODB_CONNECTION_STRING = "mongodb+srv://{}:{}@{}/?retryWrites=true&w=majority".format(MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_SERVER)
 
