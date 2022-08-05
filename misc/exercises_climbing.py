@@ -41,6 +41,8 @@ async def build_workout_details(response_cursor):
     exercises = dict()
     exercises['climbing_exercises'] = list()
     exercises['distribution_of_climbing_exercises'] = dict()
+    exercises['total_sent'] = 0
+    exercises['total_unsent_moves'] = 0
     exercises['total_load'] = 0
 
     for exercise in await response_cursor.to_list(length=256):
@@ -63,15 +65,18 @@ async def build_workout_details(response_cursor):
                 exercises['distribution_of_climbing_exercises'][exercise['grade']]['sent'] = 1
             else:
                 exercises['distribution_of_climbing_exercises'][exercise['grade']]['sent'] += 1
+
+            exercises['total_sent'] += 1
         else:
             if 'moves' not in exercises['distribution_of_climbing_exercises'][exercise['grade']]:
                 exercises['distribution_of_climbing_exercises'][exercise['grade']]['moves'] = list()
             exercises['distribution_of_climbing_exercises'][exercise['grade']]['moves'].append((
                 exercise['moves'], exercise['total_moves']))
 
+            exercises['total_unsent_moves'] += exercise['moves']
+
         exercises['total_load'] = exercises['total_load'] + exercise['load']
 
     exercises['total_load'] = round(exercises['total_load'], 2)
-    exercises['number_of_climbing_exercises'] = len(exercises['climbing_exercises'])
 
     return exercises
