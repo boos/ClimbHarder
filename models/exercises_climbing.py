@@ -1,9 +1,9 @@
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from bson import ObjectId
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 class FontBoulderingGrade(Enum):
@@ -62,14 +62,19 @@ class ClimbingExerciseIn(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-class ClimbingExerciseOut(ClimbingExerciseIn):
+class ClimbingExerciseInUpdateOnDB(ClimbingExerciseIn):
+    when: Optional[datetime] = Field(title="Date and time of when the exercise has been done.")
 
+
+class ClimbingExerciseOut(ClimbingExerciseIn):
     load: float = Field(title='The estimated load of the exercise.')
     when: datetime = Field(title="Date and time of when the exercise has been done.")
 
+    class Config:
+        json_encoders = {ObjectId: str}
+
 
 class ClimbingExerciseOnDB(ClimbingExerciseOut):
-
     username: str = Field(..., title="The username.", max_length=64)
 
     class Config:
