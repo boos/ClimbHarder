@@ -1,4 +1,5 @@
 import json
+
 import pytest
 
 from shared import test_user_login
@@ -88,7 +89,7 @@ async def test_can_successfully_get_other_user_details():
 
 
 @pytest.mark.anyio
-async def test_can_successfully_update_user_details_if_self():
+async def test_can_successfully_update_user_details():
     ac = await test_user_login()
 
     data = {
@@ -107,8 +108,13 @@ async def test_can_successfully_update_user_details_if_self():
 
     response = await ac.patch('/users/me', content=json.dumps(data))
 
+    response = await ac.get('/users/me')
+    data = response.json()
+
     data['username'] = 'test'
     data['password'] = '**********'
+    data['name'] = 'Climbing'
+    data['surname'] = "Machine"
     data['moonboard_password'] = '**********'
     data['email'] = 'rmartelloni+test@gmail.com'
     assert response.status_code == 200
