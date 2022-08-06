@@ -1,7 +1,7 @@
-import pytest, json
+import json
+import pytest
 
 from shared import test_user_login
-from main import app
 
 
 @pytest.mark.anyio
@@ -81,10 +81,10 @@ async def test_can_successfully_get_other_user_details():
 
     ac = await test_user_login()
 
-    response = await ac.get('/users/iRockClimb')
+    response = await ac.get('/users/rmartelloni')
 
     assert response.status_code == 200
-    assert response.json()['username'] == 'iRockClimb'
+    assert response.json()['username'] == 'rmartelloni'
 
 
 @pytest.mark.anyio

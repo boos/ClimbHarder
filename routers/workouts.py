@@ -1,6 +1,7 @@
 import datetime
 
-from fastapi import APIRouter, Depends, status
+from bson import ObjectId
+from fastapi import APIRouter, Depends, status, HTTPException
 from pymongo import ReturnDocument
 
 from misc import security, exercises_climbing, nosql
@@ -55,8 +56,7 @@ async def get_workout_details(year, month, day, current_user: dict = Depends(sec
 async def get_workout_details(year, month, day, hour, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour """
 
-    when = datetime.datetime(int(year), int(month), int(day),
-                             int(hour))
+    when = datetime.datetime(int(year), int(month), int(day), int(hour))
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
@@ -81,8 +81,7 @@ async def get_workout_details(year, month, day, hour, current_user: dict = Depen
 async def get_workout_details(year, month, day, hour, minute, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, and minute """
 
-    when = datetime.datetime(int(year), int(month), int(day),
-                             int(hour), int(minute))
+    when = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute))
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
@@ -113,7 +112,7 @@ async def get_workout_details(year, month, day, hour, minute, current_user: dict
              status_code=status.HTTP_201_CREATED)
 async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn,
                                            current_user: dict = Depends(security.get_current_user)):
-    """ Add a climbing exercise to a specific workout done now"""
+    """ Add a climbing exercise to a specific workout done now """
 
     when = datetime.datetime.now()
 
@@ -130,7 +129,6 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
     await nosql.workouts_collection.insert_one(climbing_exercise_out_on_db.dict(exclude_none=True,
                                                                                 exclude_unset=True,
                                                                                 exclude_defaults=True))
-
     return climbing_exercise_out_on_db
 
 
@@ -143,7 +141,7 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
 async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn,
                                            year, month, day, hour, minute,
                                            current_user: dict = Depends(security.get_current_user)):
-    """ TODO: Add a climbing exercise to a specific workout done as specified."""
+    """ Add a climbing exercise to the year, month, day, hour and minute workout. """
 
     when = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute))
 
@@ -164,15 +162,15 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
     return climbing_exercise_out_on_db
 
 
-@router.patch("/workouts/{_id}/",
+@router.patch("/workouts/{object_id}/",
               response_model=ClimbingExerciseOut,
               response_model_exclude_none=True,
               response_model_exclude_unset=True,
               response_model_exclude_defaults=True,
               status_code=status.HTTP_200_OK)
-async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExerciseInUpdateOnDB, _id,
+async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExerciseInUpdateOnDB, object_id,
                                                   current_user: dict = Depends(security.get_current_user)):
-    """ Update and return an exercise within a specified year, month, day, hour, and minute """
+    """ Update and return an exercise referenced by the object_id """
 
     load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
 
@@ -184,12 +182,31 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
                                                        when=climbing_exercise.when,
                                                        username=current_user['username'])
 
-    from bson import ObjectId
-
-    response = await nosql.workouts_collection.find_one_and_update({"_id": ObjectId(_id)},
+    response = await nosql.workouts_collection.find_one_and_update({"_id": ObjectId(object_id),
+                                                                    "username": current_user['username']},
                                                                    {"$set": climbing_exercise_out_on_db.dict(
                                                                        exclude_none=True,
                                                                        exclude_defaults=True,
                                                                        exclude_unset=True)},
                                                                    return_document=ReturnDocument.AFTER)
     return response
+
+
+@router.delete("/workouts/{object_id}/",
+               response_model=ClimbingExerciseOut,
+               response_model_exclude_none=True,
+               response_model_exclude_unset=True,
+               response_model_exclude_defaults=True,
+               status_code=status.HTTP_200_OK)
+async def delete_a_climbing_exercise_in_a_workout(object_id, current_user: dict = Depends(security.get_current_user)):
+    """ Delete the exercise referenced by the object_id """
+
+    response_status = await nosql.workouts_collection.find_one_and_delete({"_id": ObjectId(object_id),
+                                                                           "username": current_user['username']})
+
+    if response_status is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Unable to delete exercise '{}': _id not found.".format(object_id),
+                            headers={"WWW-Authenticate": "Bearer"})
+
+    return {"exercise: {} deleted.".format(response_status)}

@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
+from bson import ObjectId
 from pydantic import BaseModel, Field
 
 
@@ -49,6 +50,22 @@ class FontBoulderingGrade(Enum):
     F_9C_PLUS = "9c+"
 
 
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid objectid")
+        return ObjectId(v)
+
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        field_schema.update(type="string")
+
+
 class ClimbingExerciseIn(BaseModel):
     """ Collect basic information regarding a climb """
     grade: FontBoulderingGrade = Field(title="The grade of the boulder/route attempted.")
@@ -62,8 +79,12 @@ class ClimbingExerciseInUpdateOnDB(ClimbingExerciseIn):
 
 
 class ClimbingExerciseOut(ClimbingExerciseIn):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     load: float = Field(title='The estimated load of the exercise.')
     when: datetime = Field(title="Date and time of when the exercise has been done.")
+
+    class Config:
+        json_encoders = {ObjectId: str}
 
 
 class ClimbingExerciseOnDB(ClimbingExerciseOut):
