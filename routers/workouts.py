@@ -104,6 +104,12 @@ async def get_workout_details(year, month, day, hour, minute, current_user: dict
     return exercises
 
 
+# TODO: add get with seconds
+# @router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}", status_code=status.HTTP_200_OK)
+# async def get_workout_details(year, month, day, hour, minute, second,
+# current_user: dict = Depends(# security.get_current_user)):
+
+
 @router.post("/workouts",
              response_model=ClimbingExerciseOut,
              response_model_exclude_none=True,
@@ -132,18 +138,18 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
     return climbing_exercise_out_on_db
 
 
-@router.post('/workouts/{year}/{month}/{day}/{hour}/{minute}',
+@router.post('/workouts/{year}/{month}/{day}/{hour}/{minute}/{second}',
              response_model=ClimbingExerciseOut,
              response_model_exclude_none=True,
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
              status_code=status.HTTP_201_CREATED)
 async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn,
-                                           year, month, day, hour, minute,
+                                           year, month, day, hour, minute, second,
                                            current_user: dict = Depends(security.get_current_user)):
     """ Add a climbing exercise to the year, month, day, hour and minute workout. """
 
-    when = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute))
+    when = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
 
     load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
 
@@ -160,6 +166,9 @@ async def add_climbing_exercise_to_workout(climbing_exercise: ClimbingExerciseIn
                                                                                 exclude_defaults=True))
 
     return climbing_exercise_out_on_db
+
+
+# TODO: create router.post with minute only
 
 
 @router.patch("/workouts/{object_id}/",
