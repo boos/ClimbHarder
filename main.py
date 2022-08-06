@@ -12,7 +12,7 @@ app.include_router(workouts.router)
 
 
 @app.on_event("startup")
-async def startup():
+async def application_initialization():
     from misc.nosql import mongodb_initialization
     await mongodb_initialization()
 
