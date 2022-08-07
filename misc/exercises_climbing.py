@@ -18,7 +18,7 @@ def compute_climbing_exercise_load(climbing_exercise: ClimbingExerciseIn):
                             detail="If sent is 'true', no moves value must be inserted")
 
     if climbing_exercise.sent is True:
-        return loads[climbing_exercise.grade.value]
+        return loads[climbing_exercise.grade]
 
     # TODO: create custom validator on the class, instead of raising an exception
     if climbing_exercise.total_moves is None or climbing_exercise.moves is None:
@@ -31,7 +31,7 @@ def compute_climbing_exercise_load(climbing_exercise: ClimbingExerciseIn):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Moves done cannot be grater than total moves on the problem/route.")
 
-    load = (loads[climbing_exercise.grade.value]/climbing_exercise.total_moves)*climbing_exercise.moves
+    load = (loads[climbing_exercise.grade] / int(climbing_exercise.total_moves)) * int(climbing_exercise.moves)
     return round(load, 2)
 
 

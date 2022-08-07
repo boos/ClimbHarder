@@ -1,12 +1,8 @@
-from pprint import pprint
-
 from httpx import AsyncClient
 from jose import jwt
 
 import misc.security
 from main import app
-from routers import security
-
 from tests.shared import test_user_login
 
 
@@ -35,6 +31,5 @@ def test_can_create_access_token_successfully():
     access_token = misc.security.create_access_token(data={"sub": user['username']})
 
     creds = jwt.decode(access_token, str(misc.security.SECRET_KEY), algorithms=[misc.security.ALGORITHM])
-    pprint(creds)
     assert creds.get("sub") is not None
     assert creds["sub"] == user['username']

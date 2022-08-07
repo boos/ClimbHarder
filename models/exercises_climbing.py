@@ -73,9 +73,15 @@ class ClimbingExerciseIn(BaseModel):
     total_moves: Optional[int] = Field(title="The total number of moves of the boulder/route attempted.", gt=0)
     sent: bool = Field(title="True if you sent the boulder/route.")
 
+    class Config:
+        use_enum_values = True
 
-class ClimbingExerciseInUpdateOnDB(ClimbingExerciseIn):
+
+class ClimbingExerciseInUpdate(ClimbingExerciseIn):
     when: Optional[datetime] = Field(title="Date and time of when the exercise has been done.")
+
+    class Config:
+        use_enum_values = True
 
 
 class ClimbingExerciseOut(ClimbingExerciseIn):
@@ -85,10 +91,14 @@ class ClimbingExerciseOut(ClimbingExerciseIn):
 
     class Config:
         json_encoders = {ObjectId: str}
+        use_enum_values = True
 
 
-class ClimbingExerciseOnDB(ClimbingExerciseOut):
+class ClimbingExerciseOnDB(ClimbingExerciseIn):
     username: str = Field(..., title="The username.", max_length=64)
+    load: float = Field(title='The estimated load of the exercise.')
+    when: datetime = Field(title="Date and time of when the exercise has been done.")
 
     class Config:
+        json_encoders = {ObjectId: str}
         use_enum_values = True
