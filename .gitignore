@@ -211,3 +211,5 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Environment Variables with MongoDB server and credentials
+set_mongodb_env.sh
