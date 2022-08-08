@@ -9,7 +9,7 @@ from tests.shared import test_user_login
 async def test_authenticate_wrong_username_password():
     ac = AsyncClient(app=app, base_url="http://127.0.0.1:8000")
     response = await ac.post("/token", data={'username': 'dc724af18fbdd4e59189f5fe768a5f8311527050+wrong',
-                                             'password':'wrong-password'})
+                                             'password': 'wrong-password'})
     assert response.status_code == 401
     assert response.json() == {'detail': 'Invalid username or password'}
 
