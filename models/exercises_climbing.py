@@ -102,3 +102,4 @@ class ClimbingExerciseOnDB(ClimbingExerciseIn):
     class Config:
         json_encoders = {ObjectId: str}
         use_enum_values = True
+        extra = "forbid"
