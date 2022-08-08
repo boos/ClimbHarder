@@ -54,6 +54,7 @@ async def build_workout_details(response_cursor):
         exercise.pop('day', None)
         exercise.pop('hour', None)
         exercise.pop('minute', None)
+        exercise.pop('second', None)
 
         exercises['climbing_exercises'].append(exercise)
 
