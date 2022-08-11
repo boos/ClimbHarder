@@ -39,15 +39,20 @@ async def build_workout_details(response_cursor):
     """ Build a dict containing all exercises in sequence plus total work and number of exercises """
 
     exercises = dict()
+
     exercises['climbing_exercises'] = list()
     exercises['distribution_of_climbing_exercises'] = dict()
+
+    exercises['workouts_dates'] = set()
+
     exercises['total_sent'] = 0
     exercises['total_unsent_moves'] = 0
+
     exercises['total_load'] = 0
 
-    for exercise in await response_cursor.to_list(length=256):
+    for exercise in await response_cursor.to_list(length=36500):
 
-        exercise['_id'] = str(exercise['_id'])
+        # clean up not-needed projections data
         exercise.pop('username', None)
         exercise.pop('year', None)
         exercise.pop('month', None)
@@ -55,6 +60,10 @@ async def build_workout_details(response_cursor):
         exercise.pop('hour', None)
         exercise.pop('minute', None)
         exercise.pop('second', None)
+
+        exercise['_id'] = str(exercise['_id'])
+
+        exercises['workouts_dates'].add(exercise['when'].strftime("%Y-%m-%d"))
 
         exercises['climbing_exercises'].append(exercise)
 
