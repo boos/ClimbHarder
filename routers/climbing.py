@@ -49,7 +49,7 @@ async def add_a_climbing_exercise_done_now_to_a_workout(climbing_exercise: Climb
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
              status_code=status.HTTP_201_CREATED)
-async def add_a_climbing_exercise_using_a_date_to_workout(climbing_exercise: ClimbingExerciseIn,
+async def add_a_climbing_exercise_using_a_date_to_a_workout(climbing_exercise: ClimbingExerciseIn,
                                                           year, month, day, hour, minute, second,
                                                           current_user: dict = Depends(security.get_current_user)):
     """ Add a climbing exercise to the year, month, day, hour, minute and second workout. """
