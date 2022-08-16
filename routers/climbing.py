@@ -23,7 +23,7 @@ async def add_a_climbing_exercise_done_now_to_a_workout(climbing_exercise: Climb
 
     when = datetime.datetime.now()
 
-    load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
+    load = exercises_climbing.compute_climbing_grade_to_load(climbing_exercise)
 
     climbing_exercise_out_on_db = ClimbingExerciseOnDB(grade=climbing_exercise.grade,
                                                        moves=climbing_exercise.moves,
@@ -56,7 +56,7 @@ async def add_a_climbing_exercise_using_a_date_to_a_workout(climbing_exercise: C
 
     when = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
 
-    load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
+    load = exercises_climbing.compute_climbing_grade_to_load(climbing_exercise)
 
     climbing_exercise_out_on_db = ClimbingExerciseOnDB(grade=climbing_exercise.grade,
                                                        moves=climbing_exercise.moves,
@@ -94,7 +94,7 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
     else:
         grade = response['grade']
 
-    load = exercises_climbing.compute_climbing_exercise_load(climbing_exercise)
+    load = exercises_climbing.compute_climbing_grade_to_load(climbing_exercise)
 
     if climbing_exercise.when:
         when = climbing_exercise.when

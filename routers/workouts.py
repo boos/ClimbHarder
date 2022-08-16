@@ -1,12 +1,9 @@
 import datetime
 
 from fastapi import APIRouter, Depends, status
-from pymongo.results import InsertOneResult
 
-from misc import security, exercises_climbing, nosql
-from misc.exercises_climbing import build_workout_details
-from models.exercises_climbing import ClimbingExerciseIn
-from models.exercises_climbing import ClimbingExerciseOut, ClimbingExerciseOnDB
+from misc import security, nosql
+from misc.exercises_climbing import compute_overall_workout_response
 
 router = APIRouter(dependencies=[Depends(security.oauth2_scheme)])
 
@@ -21,7 +18,7 @@ async def get_workout_details(current_user: dict = Depends(security.get_current_
                                                                          '_id': 1}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
 
@@ -39,7 +36,7 @@ async def get_workout_details(year,
                                                            {'$match': {'year': {'$eq': int(year)}}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
 
@@ -59,7 +56,7 @@ async def get_workout_details(year, month,
                                                                        'month': {'$eq': int(month)}}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
 
@@ -81,7 +78,7 @@ async def get_workout_details(year, month, day,
                                                                        'day': {'$eq': int(day)}}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
 
@@ -107,7 +104,7 @@ async def get_workout_details(year, month, day, hour,
                                                                        'hour': {'$eq': int(hour)}}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
 
@@ -135,7 +132,7 @@ async def get_workout_details(year, month, day, hour, minute,
                                                                        'minute': {'$eq': int(minute)}}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
 
@@ -165,6 +162,6 @@ async def get_workout_details(year, month, day, hour, minute, second,
                                                                        'second': {'$eq': int(minute)}}},
                                                            {'$sort': {'when': 1}}])
 
-    exercises = await build_workout_details(response_cursor)
+    exercises = await compute_overall_workout_response(response_cursor)
 
     return exercises
