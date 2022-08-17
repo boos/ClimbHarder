@@ -128,5 +128,3 @@ async def test_can_successfully_get_climbing_exercise_from_workout_from_sent_to_
 async def test_can_successfully_get_climbing_exercise_from_workout_from_nosent_to_sent():
     # TODO
     ac = await test_user_login()
-
-
