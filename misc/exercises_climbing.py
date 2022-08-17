@@ -47,14 +47,14 @@ async def compute_overall_workout_response(response_cursor):
     # Total counters, and variables
     total_unsent_moves = 0
     total_load = 0
-    total_sent = list()
-    total_unsent = list()
+    total_sent = []
+    total_unsent = []
 
     # workout counters, and variables
     workout_unsent_moves = 0
     workout_load = 0
-    workout_sent = list()
-    workout_unsent = list()
+    workout_sent = []
+    workout_unsent = []
 
     previous_workout_date = None
 
@@ -86,8 +86,8 @@ async def compute_overall_workout_response(response_cursor):
                 await compute_climbing_exercise_stats(workout_details, previous_workout_date, workout_load,
                                                       workout_sent, workout_unsent, workout_unsent_moves)
 
-                workout_sent = list()
-                workout_unsent = list()
+                workout_sent = []
+                workout_unsent = []
                 workout_unsent_moves = 0
                 workout_load = 0
 
