@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer
 
-from routers import users, security, climbing, workouts
+from routers import users, security, climbings, workouts
 
 app = FastAPI()
 
