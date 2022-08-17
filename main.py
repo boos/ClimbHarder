@@ -7,7 +7,7 @@ app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-app.include_router(climbing.router)
+app.include_router(climbings.router)
 app.include_router(workouts.router)
 app.include_router(users.router)
 app.include_router(security.router)

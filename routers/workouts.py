@@ -176,15 +176,29 @@ async def compute_workout_climbing_response(response_cursor):
 
     # Total counters, and variables
     total_unsent_moves = 0
+    total_sent_load = 0
+    total_unsent_moves_load = 0
     total_load = 0
     total_sent = []
     total_unsent = []
 
-    # workout counters, and variables
+    # Count number of unsent moves per workout
     workout_unsent_moves = 0
-    workout_load = 0
-    workout_sent = []
-    workout_unsent = []
+    # Store on which grades we made unsent moves attempts
+    workout_unsent_climbings_grades = []
+    # Count unsent moves load per workout
+    workout_unsent_moves_load = 0
+
+
+    # Don't count number of sent as we will use len()
+    # workout_sent = 0
+    # Store on which grade we sent
+    workout_sent_climbings_grades = []
+    # Count sent load per workout
+    workout_sent_load = 0
+
+    # Count unsent and sent overall load
+    workout_total_load = 0
 
     previous_workout_date = None
 
@@ -207,49 +221,68 @@ async def compute_workout_climbing_response(response_cursor):
             workout_details[exercise['when'].strftime("%Y-%m-%d")] = OrderedDict({'climbings': [],
                                                                                   'workout_sent_distribution': [],
                                                                                   'workout_unsent_moves_distribution': [],
-                                                                                  'workout_sent': [],
-                                                                                  'workout_unsent_moves': [],
-                                                                                  'workout_load': 0})
+                                                                                  'workout_sent_load': 0,
+                                                                                  'workout_unsent_moves_load': 0,
+                                                                                  'workout_total_load': 0})
 
             # It is a new workout, hence we can compute previous workout stats
             if previous_workout_date is not None and previous_workout_date != exercise['when'].strftime("%Y-%m-%d"):
-                await compute_workout_climbing_stats(workout_details, previous_workout_date, workout_load,
-                                                     workout_sent, workout_unsent, workout_unsent_moves)
+                await compute_workout_climbing_stats(workout_details, previous_workout_date,
+                                                     workout_sent_climbings_grades, workout_unsent_climbings_grades,
+                                                     workout_unsent_moves,
+                                                     workout_sent_load, workout_unsent_moves_load, workout_total_load)
 
-                workout_sent = []
-                workout_unsent = []
+                workout_sent_climbings_grades = []
+                workout_unsent_climbings_grades = []
                 workout_unsent_moves = 0
-                workout_load = 0
+                workout_sent_load = 0
+                workout_unsent_moves_load = 0
+                workout_total_load = 0
 
         # store exercise
         workout_details[exercise['when'].strftime("%Y-%m-%d")]['climbings'].append(exercise)
 
         # compute total load
         total_load += exercise['load']
-        # compute workout load
-        workout_load += exercise['load']
+        # compute total workout load
+        workout_total_load += exercise['load']
 
-        # Count total and workout related sent to compute sent distributions
+        # Store all sent and workout sent to subsequently compute workout and total sent distributions
         if exercise['sent'] is True:
+            workout_sent_climbings_grades.append(exercise['grade'])
             total_sent.append(exercise['grade'])
-            workout_sent.append(exercise['grade'])
 
-        # Count total and workout related moves to compute moves distributions
+            # we don't count total sent as we can simply use len afterwards
+
+            # Calculate workout sent load
+            workout_sent_load += exercise['load']
+            # Calculate total sent load
+            total_sent_load += exercise['load']
+
+        # Store all unsent and workout moves to subsequently compute workout and total unsent moves distributions
         else:
             for i in range(0, exercise['moves']):
+                workout_unsent_climbings_grades.append(exercise['grade'])
                 total_unsent.append(exercise['grade'])
-                workout_unsent.append(exercise['grade'])
 
-            # count total moves
-            total_unsent_moves += exercise['moves']
-            # count workout moves
+            # count workout moves as we can't use len() as per sent
             workout_unsent_moves += exercise['moves']
+            # count total moves as we can't use len() as per sent
+            total_unsent_moves += exercise['moves']
+
+            # Calculate unsent moves load
+            workout_unsent_moves_load += exercise['load']
+            # Calculate total unsent moves load
+            total_unsent_moves_load += exercise['load']
 
         previous_workout_date = exercise['when'].strftime("%Y-%m-%d")
 
-    # compute last workout
-    await compute_workout_climbing_stats(workout_details, previous_workout_date, workout_load, workout_sent,
-                                         workout_unsent, workout_unsent_moves)
+    # compute workout climbing stats such as load, etc.
+    await compute_workout_climbing_stats(workout_details, previous_workout_date,
+                                         workout_sent_climbings_grades,workout_unsent_climbings_grades,
+                                         workout_unsent_moves,
+                                         workout_sent_load, workout_unsent_moves_load, workout_total_load)
+
 
     # compute all workouts
     workout_details['workouts'] = workouts
@@ -257,18 +290,23 @@ async def compute_workout_climbing_response(response_cursor):
     workout_details['unsent_moves_distribution'] = Counter(total_unsent).most_common()
     workout_details['total_sent'] = len(total_sent)
     workout_details['total_unsent_moves'] = total_unsent_moves
+    workout_details['total_sent_load'] = round(total_sent_load,2)
+    workout_details['total_unsent_moves_load'] = round(total_unsent_moves_load,2)
     workout_details['total_load'] = round(total_load, 2)
 
     return workout_details
 
 
-async def compute_workout_climbing_stats(exercises, previous_workout_date, workout_load, workout_sent,
-                                         workout_unsent, workout_unsent_moves):
-    012.
+async def compute_workout_climbing_stats(exercises, previous_workout_date,
+                                         workout_climbings_grade_sent, workout_climbings_grade_unsent,
+                                         workout_unsent_moves_number,
+                                         workout_sent_load, workout_unsent_moves_load, workout_total_load, ):
     """ Compute some climbing exercise """
 
-    exercises[previous_workout_date]['workout_sent_distribution'] = Counter(workout_sent).most_common()
-    exercises[previous_workout_date]['workout_unsent_moves_distribution'] = Counter(workout_unsent).most_common()
-    exercises[previous_workout_date]['workout_sent'] = len(workout_sent)
-    exercises[previous_workout_date]['workout_unsent_moves'] = workout_unsent_moves
-    exercises[previous_workout_date]['workout_load'] = round(workout_load, 2)
+    exercises[previous_workout_date]['workout_sent_distribution'] = Counter(workout_climbings_grade_sent).most_common()
+    exercises[previous_workout_date]['workout_unsent_moves_distribution'] = Counter(workout_climbings_grade_unsent).most_common()
+    exercises[previous_workout_date]['workout_#_sent'] = len(workout_climbings_grade_sent)
+    exercises[previous_workout_date]['workout_#_unsent_moves'] = workout_unsent_moves_number
+    exercises[previous_workout_date]['workout_sent_load'] = round(workout_sent_load,2)
+    exercises[previous_workout_date]['workout_unsent_moves_load'] = round(workout_unsent_moves_load,2)
+    exercises[previous_workout_date]['workout_total_load'] = round(workout_total_load, 2)
