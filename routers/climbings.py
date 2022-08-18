@@ -78,7 +78,7 @@ async def add_a_climbing_exercise_using_a_date_to_a_workout(climbing_exercise: C
     except DuplicateKeyError as err:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Unable to insert the submitted climbing exercise: "
-                                   "another one exist on date {}.".format(
+                                   "another one exist with date {}.".format(
                                 err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
 
     climbing_exercise_out_on_db_dict['_id'] = response.inserted_id
