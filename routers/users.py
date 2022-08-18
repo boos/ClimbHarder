@@ -51,9 +51,9 @@ async def create_user(user: UserOnDB):
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
 
     try:
-        new_user = await nosql.db["users"].insert_one(user.dict(exclude_none=True,
-                                                                exclude_defaults=True,
-                                                                exclude_unset=True))
+
+        await nosql.db["users"].insert_one(user.dict(exclude_none=True, exclude_defaults=True, exclude_unset=True))
+
     except pymongo.errors.DuplicateKeyError as err:
 
         if err.__str__().find("username") != -1:

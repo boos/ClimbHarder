@@ -122,9 +122,6 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
         ceo = ClimbingExerciseOnDB(grade=grade, sent=sent, moves=moves, total_moves=total_moves, load=load, when=when,
                                    username=current_user['username'])
 
-    from pprint import pprint
-    pprint(ceo.dict())
-
     update = await nosql.workouts_collection.update_one({"_id": ObjectId(object_id),
                                                          "username": current_user['username']},
                                                         {"$set": ceo.dict()})
