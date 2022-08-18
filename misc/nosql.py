@@ -29,6 +29,6 @@ async def mongodb_initialization():
 
     workouts_collection_indexes_keys = (await workouts_collection.index_information()).keys()
     if "unique_climbing_datetime" not in workouts_collection_indexes_keys:
-        workouts_collection.create_index([("username", pymongo.ASCENDING) ("when", pymongo.DESCENDING)],
-        name="unique_climbing_datetime",
-        unique=True)
+        workouts_collection.create_index([("username", pymongo.ASCENDING), ("when", pymongo.DESCENDING)],
+                                         name="unique_climbing_datetime",
+                                         unique=True)
