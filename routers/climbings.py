@@ -2,6 +2,7 @@ import datetime
 
 from bson import ObjectId
 from fastapi import Depends, HTTPException
+from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult
 from starlette import status
 
@@ -70,7 +71,15 @@ async def add_a_climbing_exercise_using_a_date_to_a_workout(climbing_exercise: C
                                                                         exclude_unset=True,
                                                                         exclude_defaults=True)
 
-    response: InsertOneResult = await nosql.workouts_collection.insert_one(climbing_exercise_out_on_db_dict)
+    try:
+
+        response: InsertOneResult = await nosql.workouts_collection.insert_one(climbing_exercise_out_on_db_dict)
+
+    except DuplicateKeyError as err:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Unable to insert the submitted climbing exercise: "
+                                   "another one exist with date {}.".format(
+                                err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
 
     climbing_exercise_out_on_db_dict['_id'] = response.inserted_id
 
@@ -87,7 +96,8 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
                                                   current_user: dict = Depends(security.get_current_user)):
     """ Update and return an exercise referenced by the object_id """
 
-    response = await nosql.workouts_collection.find_one({"_id": ObjectId(object_id), "username": current_user['username']})
+    response = await nosql.workouts_collection.find_one(
+        {"_id": ObjectId(object_id), "username": current_user['username']})
 
     if climbing_exercise.grade != response['grade']:
         grade = climbing_exercise.grade
