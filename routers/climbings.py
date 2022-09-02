@@ -125,8 +125,8 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
     update = await nosql.workouts_collection.update_one({"_id": ObjectId(object_id),
                                                          "username": current_user['username']},
                                                         {"$set": ceo.dict(exclude_none=True,
-                                                                        exclude_unset=True,
-                                                                        exclude_defaults=True)})
+                                                                          exclude_unset=True,
+                                                                          exclude_defaults=True)})
     ceo_dict = ceo.dict()
     ceo_dict['_id'] = object_id
 
