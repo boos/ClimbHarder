@@ -1,3 +1,4 @@
+import datetime
 from collections import OrderedDict, Counter
 
 from fastapi import APIRouter, Depends, status
@@ -141,6 +142,9 @@ async def compute_workout_climbing_stats(exercises, previous_workout_date,
                                          workout_sent_load, workout_unsent_moves_load, workout_total_load, ):
     """ Compute some climbing exercise """
 
+    if previous_workout_date is None:
+        return
+
     exercises[previous_workout_date]['workout_sent_distribution'] = Counter(workout_climbings_grade_sent).most_common()
     exercises[previous_workout_date]['workout_unsent_moves_distribution'] = Counter(
         workout_climbings_grade_unsent).most_common()
@@ -152,7 +156,7 @@ async def compute_workout_climbing_stats(exercises, previous_workout_date,
 
 
 @router.get("/workouts/", status_code=status.HTTP_200_OK)
-async def get_workout_details(current_user: dict = Depends(security.get_current_user)):
+async def get_all_workout_details(current_user: dict = Depends(security.get_current_user)):
     """ Return all workouts details. """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
@@ -166,9 +170,49 @@ async def get_workout_details(current_user: dict = Depends(security.get_current_
     return exercises
 
 
+@router.get("/workouts/latest", status_code=status.HTTP_200_OK)
+async def get_latest_workout_details(current_user: dict = Depends(security.get_current_user)):
+
+    # Find latest workout for the user
+    response_cursor = nosql.workouts_collection.find({ 'username': current_user['username']}).sort('when',-1).limit(1)
+    documents_list = await response_cursor.to_list(length=1)
+    document = documents_list[0]
+    # from pprint import pprint
+    # pprint(document[0]['when'].year)
+
+    return await get_workout_details_year_month_day(document['when'].year, document['when'].month,
+                                                    document['when'].day, current_user)
+
+
+
+
+@router.get("/workouts/today", status_code=status.HTTP_200_OK)
+async def get_today_workout_details(current_user: dict = Depends(security.get_current_user)):
+    """ Return today workout details. """
+
+    year = datetime.date.today().year
+    month = datetime.date.today().month
+    day = datetime.date.today().day
+
+    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                         '_id': 1,
+                                                                         'year': {'$year': '$when'},
+                                                                         'month': {'$month': '$when'},
+                                                                         'day': {'$dayOfMonth': '$when'}}},
+                                                           {'$match': {'year': {'$eq': int(year)},
+                                                                       'month': {'$eq': int(month)},
+                                                                       'day': {'$eq': int(day)}}},
+                                                           {'$sort': {'when': 1}}])
+
+    exercises = await compute_workout_climbing_response(response_cursor)
+
+    return exercises
+
+
 @router.get("/workouts/{year}", status_code=status.HTTP_200_OK)
-async def get_workout_details(year,
-                              current_user: dict = Depends(security.get_current_user)):
+async def get_year_workout_details(year, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
@@ -185,8 +229,7 @@ async def get_workout_details(year,
 
 
 @router.get("/workouts/{year}/{month}", status_code=status.HTTP_200_OK)
-async def get_workout_details(year, month,
-                              current_user: dict = Depends(security.get_current_user)):
+async def get_year_month_workout_details(year, month, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
@@ -205,8 +248,7 @@ async def get_workout_details(year, month,
 
 
 @router.get("/workouts/{year}/{month}/{day}", status_code=status.HTTP_200_OK)
-async def get_workout_details(year, month, day,
-                              current_user: dict = Depends(security.get_current_user)):
+async def get_year_month_day_workout_details(year, month, day, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
@@ -227,8 +269,8 @@ async def get_workout_details(year, month, day,
 
 
 @router.get("/workouts/{year}/{month}/{day}/{hour}", status_code=status.HTTP_200_OK)
-async def get_workout_details(year, month, day, hour,
-                              current_user: dict = Depends(security.get_current_user)):
+async def get_year_month_day_hour_workout_details(year, month, day, hour,
+                                                  current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
@@ -251,8 +293,8 @@ async def get_workout_details(year, month, day, hour,
 
 
 @router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}", status_code=status.HTTP_200_OK)
-async def get_workout_details(year, month, day, hour, minute,
-                              current_user: dict = Depends(security.get_current_user)):
+async def get_year_month_day_hour_minute_workout_details(year, month, day, hour, minute,
+                                                         current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, and minute """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
@@ -277,8 +319,8 @@ async def get_workout_details(year, month, day, hour, minute,
 
 
 @router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}/{second}", status_code=status.HTTP_200_OK)
-async def get_workout_details(year, month, day, hour, minute, second,
-                              current_user: dict = Depends(security.get_current_user)):
+async def get_year_month_day_hour_minute_second_workout_details(year, month, day, hour, minute, second,
+                                                                current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, minute and second """
 
     response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},

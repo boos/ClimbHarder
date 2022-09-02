@@ -18,7 +18,7 @@ from routers.workouts import router
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
              status_code=status.HTTP_201_CREATED)
-async def add_a_climbing_exercise_done_now_to_a_workout(climbing_exercise: ClimbingExerciseIn,
+async def add_a_climbing_exercise_to_a_workout_done_now(climbing_exercise: ClimbingExerciseIn,
                                                         current_user: dict = Depends(security.get_current_user)):
     """ Add a climbing exercise to a specific workout done now """
 
@@ -50,7 +50,7 @@ async def add_a_climbing_exercise_done_now_to_a_workout(climbing_exercise: Climb
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
              status_code=status.HTTP_201_CREATED)
-async def add_a_climbing_exercise_using_a_date_to_a_workout(climbing_exercise: ClimbingExerciseIn,
+async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: ClimbingExerciseIn,
                                                             year, month, day, hour, minute, second,
                                                             current_user: dict = Depends(security.get_current_user)):
     """ Add a climbing exercise to the year, month, day, hour, minute and second workout. """
@@ -124,7 +124,9 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
 
     update = await nosql.workouts_collection.update_one({"_id": ObjectId(object_id),
                                                          "username": current_user['username']},
-                                                        {"$set": ceo.dict()})
+                                                        {"$set": ceo.dict(exclude_none=True,
+                                                                        exclude_unset=True,
+                                                                        exclude_defaults=True)})
     ceo_dict = ceo.dict()
     ceo_dict['_id'] = object_id
 
