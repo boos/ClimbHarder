@@ -11,7 +11,7 @@ from misc.nosql import users_collection
 
 SECRET_KEY = "db486a70cc856cc711476f75324f4bc8e666da841bb76927a731d734b8e4ac5f"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes="bcrypt", deprecated="auto")
 
