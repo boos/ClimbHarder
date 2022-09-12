@@ -124,13 +124,57 @@ async def test_can_successfully_get_climbing_exercise_from_workout_year():
     assert {'grade': '6a', 'load': 6.0, 'sent': True}.items() <= response.json()[datetime_str]['climbings'][0].items()
     assert {'grade': '6a', 'load': 0.6, 'sent': False}.items() <= response.json()[datetime_str]['climbings'][1].items()
 
+
 @pytest.mark.anyio
-async def test_can_successfully_get_climbing_exercise_from_workout_from_sent_to_nosent():
+async def test_can_successfully_get_climbing_exercise_from_today_workout():
+    ac = await test_user_login()
+
+    response = await ac.get('/workouts/today')
+    assert response.status_code == 200
+
+    expected_response = {'workouts': 1,
+                         "sent_distribution": [["6a", 1]],
+                         "unsent_moves_distribution": [["6a", 1]],
+                         "total_sent": 1, "total_unsent_moves": 1,
+                         "total_sent_load": 6, "total_unsent_moves_load": 0.6, "total_load": 6.6}
+
+    assert expected_response.items() <= response.json().items()
+    datetime_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    assert {'grade': '6a', 'load': 6.0, 'sent': True}.items() <= response.json()[datetime_str]['climbings'][0].items()
+    assert {'grade': '6a', 'load': 0.6, 'sent': False}.items() <= response.json()[datetime_str]['climbings'][1].items()
+
+
+@pytest.mark.anyio
+async def test_can_successfully_get_climbing_exercise_from_latest_workout():
+    ac = await test_user_login()
+
+    response = await ac.get('/workouts/latest')
+    assert response.status_code == 200
+
+    expected_response = {'workouts': 1,
+                         "sent_distribution": [["6a", 1]],
+                         "unsent_moves_distribution": [["6a", 1]],
+                         "total_sent": 1, "total_unsent_moves": 1,
+                         "total_sent_load": 6, "total_unsent_moves_load": 0.6, "total_load": 6.6}
+
+    assert expected_response.items() <= response.json().items()
+    datetime_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    assert {'grade': '6a', 'load': 6.0, 'sent': True}.items() <= response.json()[datetime_str]['climbings'][0].items()
+    assert {'grade': '6a', 'load': 0.6, 'sent': False}.items() <= response.json()[datetime_str]['climbings'][1].items()
+
+
+@pytest.mark.anyio
+async def test_can_successfully_patch_climbing_exercise_from_workout_from_sent_to_nosent():
     # TODO
     ac = await test_user_login()
 
 
 @pytest.mark.anyio
-async def test_can_successfully_get_climbing_exercise_from_workout_from_nosent_to_sent():
+async def test_can_successfully_patch_climbing_exercise_from_workout_from_nosent_to_sent():
+    # TODO
+    ac = await test_user_login()
+
+
+async def test_can_successfully_patch_climbing_exercise_from_workout_changing_when():
     # TODO
     ac = await test_user_login()
