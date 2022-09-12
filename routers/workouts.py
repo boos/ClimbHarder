@@ -190,7 +190,7 @@ async def get_all_workout_details(current_user: dict = Depends(security.get_curr
 async def get_latest_workout_details(current_user: dict = Depends(security.get_current_user)):
 
     # Find latest workout for the user
-    response_cursor = nosql.workouts_collection.find({ 'username': current_user['username']}).sort('when',-1).limit(1)
+    response_cursor = nosql.workouts_collection.find({'username': current_user['username']}).sort('when', -1).limit(1)
     documents_list = await response_cursor.to_list(length=1)
     document = documents_list[0]
 
