@@ -37,10 +37,15 @@ async def compute_workout_climbing_response(response_cursor):
     # Count sent load per workout
     workout_sent_load = 0
 
+    # Store rests time between exercises
+    # Does it make sense to track the distribution?
+    # workout_rests_time = []
+
     # Count unsent and sent overall load
     workout_total_load = 0
 
     previous_workout_date = None
+    previous_exercise_datetime = None
 
     for exercise in await response_cursor.to_list(length=36500):
 
@@ -79,6 +84,16 @@ async def compute_workout_climbing_response(response_cursor):
                 workout_unsent_moves_load = 0
                 workout_total_load = 0
 
+                previous_exercise_datetime = None
+
+        # if a previous exercise was inserted, compute rest time between this and previous exercise
+        if previous_exercise_datetime is not None:
+            td = exercise['when'] - previous_exercise_datetime
+            hours = td.seconds // 3600
+            minutes = td.seconds % 3600 // 60
+            seconds = td.seconds - hours * 3600 - minutes * 60
+            exercise['rest'] = "{}:{}".format(minutes, seconds)
+
         # store exercise
         workout_details[exercise['when'].strftime("%Y-%m-%d")]['climbings'].append(exercise)
 
@@ -100,7 +115,7 @@ async def compute_workout_climbing_response(response_cursor):
             total_sent_load += exercise['load']
 
         # Store all unsent and workout moves to subsequently compute workout and total unsent moves distributions
-        else:
+        if exercise['sent'] is False:
             for _ in range(0, exercise['moves']):
                 workout_unsent_climbings_grades.append(exercise['grade'])
                 total_unsent.append(exercise['grade'])
@@ -116,6 +131,7 @@ async def compute_workout_climbing_response(response_cursor):
             total_unsent_moves_load += exercise['load']
 
         previous_workout_date = exercise['when'].strftime("%Y-%m-%d")
+        previous_exercise_datetime = exercise['when']
 
     # compute workout climbing stats such as load, etc.
     await compute_workout_climbing_stats(workout_details, previous_workout_date,
