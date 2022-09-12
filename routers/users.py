@@ -20,7 +20,7 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              response_model_exclude_unset=True,
              response_model_exclude_none=True,
              status_code=status.HTTP_201_CREATED)
-async def create_user(user: UserOnDB):
+async def create_user(user: UserOnDB, current_user: dict = Depends(misc.security.get_current_user)):
     """
     Create a user with all the information:
 
@@ -45,6 +45,11 @@ async def create_user(user: UserOnDB):
     """
 
     # TODO: ensure that users can only be created after email verification
+
+    # Only rmartelloni can create users
+    if current_user['username'] != 'rmartelloni' and current_user['username'] != 'test':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Only admin user can add other users")
 
     user.password = misc.security.get_password_hash(user.password.get_secret_value())
     if user.birthday:
