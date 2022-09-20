@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="climnbharder@nuc.fritz.box" uuid="7c0cc13e-462f-4d63-96b3-0dd4b70928cc">
+    <data-source source="LOCAL" name="MongoDB Atlas" uuid="8f73f850-9361-4566-ad0d-fcd31111a909">
       <driver-ref>mongo</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.dbschema.MongoJdbcDriver</jdbc-driver>
-      <jdbc-url>mongodb://nuc.fritz.box:27017/climnbharder</jdbc-url>
+      <jdbc-url>mongodb+srv://climbharder-dev.ipjymm2.mongodb.net</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
