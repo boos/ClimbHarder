@@ -9,16 +9,19 @@ router = APIRouter(dependencies=[Depends(security.oauth2_scheme)])
 
 
 async def compute_workout_climbing_response(response_cursor):
-    """ Build a dict summarizing all climbing exercises in order of time, plus workout stats. """
+    """ Build a dict summarizing all climbing exercises in order of time, and relative workouts stats. """
 
     workout_details = OrderedDict()
 
     workouts = 0
 
-    # Total counters, and variables
+    # Count total number of unsent moves
     total_unsent_moves = 0
+    # Store total load of sent climb
     total_sent_load = 0
+    # Store total load of moves not leading to a sent
     total_unsent_moves_load = 0
+    # Store the overall load of sent and unsent climbs
     total_load = 0
     total_sent = []
     total_unsent = []
@@ -72,7 +75,8 @@ async def compute_workout_climbing_response(response_cursor):
 
             # It is a new workout, hence we can compute previous workout stats
             if previous_workout_date is not None and previous_workout_date != exercise['when'].strftime("%Y-%m-%d"):
-                await compute_workout_climbing_stats(workout_details, previous_workout_date,
+                await compute_workout_climbing_stats(workout_details,
+                                                     previous_workout_date, exercise['when'],
                                                      workout_sent_climbings_grades, workout_unsent_climbings_grades,
                                                      workout_unsent_moves,
                                                      workout_sent_load, workout_unsent_moves_load, workout_total_load)
@@ -134,7 +138,8 @@ async def compute_workout_climbing_response(response_cursor):
         previous_exercise_datetime = exercise['when']
 
     # compute workout climbing stats such as load, etc.
-    await compute_workout_climbing_stats(workout_details, previous_workout_date,
+    await compute_workout_climbing_stats(workout_details,
+                                         previous_workout_date, exercise['when'],
                                          workout_sent_climbings_grades, workout_unsent_climbings_grades,
                                          workout_unsent_moves,
                                          workout_sent_load, workout_unsent_moves_load, workout_total_load)
@@ -152,10 +157,11 @@ async def compute_workout_climbing_response(response_cursor):
     return workout_details
 
 
-async def compute_workout_climbing_stats(exercises, previous_workout_date,
+async def compute_workout_climbing_stats(exercises,
+                                         previous_workout_date, current_workout_date,
                                          workout_climbings_grade_sent, workout_climbings_grade_unsent,
                                          workout_unsent_moves_number,
-                                         workout_sent_load, workout_unsent_moves_load, workout_total_load, ):
+                                         workout_sent_load, workout_unsent_moves_load, workout_total_load):
     """ Compute some climbing exercise """
 
     if previous_workout_date is None:
@@ -169,6 +175,11 @@ async def compute_workout_climbing_stats(exercises, previous_workout_date,
     exercises[previous_workout_date]['workout_sent_load'] = round(workout_sent_load, 2)
     exercises[previous_workout_date]['workout_unsent_moves_load'] = round(workout_unsent_moves_load, 2)
     exercises[previous_workout_date]['workout_total_load'] = round(workout_total_load, 2)
+
+    previous_workout_date_dt = datetime.datetime.strptime(previous_workout_date, "%Y-%m-%d")
+    if current_workout_date.date() != previous_workout_date_dt.date():
+
+        exercises[previous_workout_date]['workout_rest_days'] = (current_workout_date - previous_workout_date_dt).days
 
 
 @router.get("/workouts/", status_code=status.HTTP_200_OK)
