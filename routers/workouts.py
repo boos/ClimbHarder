@@ -50,6 +50,8 @@ async def compute_workout_climbing_response(response_cursor):
     previous_workout_date = None
     previous_exercise_datetime = None
 
+    exercise = { 'when': None}
+
     for exercise in await response_cursor.to_list(length=36500):
 
         # clean up not-needed projections data
@@ -164,7 +166,7 @@ async def compute_workout_climbing_stats(exercises,
                                          workout_sent_load, workout_unsent_moves_load, workout_total_load):
     """ Compute some climbing exercise """
 
-    if previous_workout_date is None:
+    if previous_workout_date is None or current_workout_date is None:
         return
 
     exercises[previous_workout_date]['workout_sent_distribution'] = Counter(workout_climbings_grade_sent).most_common()
@@ -182,7 +184,7 @@ async def compute_workout_climbing_stats(exercises,
         exercises[previous_workout_date]['workout_rest_days'] = (current_workout_date - previous_workout_date_dt).days
 
 
-@router.get("/workouts/", status_code=status.HTTP_200_OK)
+@router.get("/workouts", status_code=status.HTTP_200_OK)
 async def get_all_workout_details(current_user: dict = Depends(security.get_current_user)):
     """ Return all workouts details. """
 
