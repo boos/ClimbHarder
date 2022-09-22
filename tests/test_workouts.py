@@ -162,7 +162,3 @@ async def test_can_successfully_get_climbing_exercise_from_latest_workout():
     datetime_str = datetime.datetime.now().strftime('%Y-%m-%d')
     assert {'grade': '6a', 'load': 6.0, 'sent': True}.items() <= response.json()[datetime_str]['climbings'][0].items()
     assert {'grade': '6a', 'load': 0.6, 'sent': False}.items() <= response.json()[datetime_str]['climbings'][1].items()
-
-
-
-
