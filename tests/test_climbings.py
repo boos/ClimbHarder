@@ -52,7 +52,6 @@ async def test_can_successfully_add_climbing_exercise_to_workout_no_sent_when():
     assert data.items() <= response.json().items()
 
 
-
 @pytest.mark.anyio
 async def test_can_successfully_patch_climbing_exercise_from_workout_from_sent_to_nosent():
     ac = await test_user_login()
@@ -67,6 +66,7 @@ async def test_can_successfully_patch_climbing_exercise_from_workout_from_sent_t
     assert response.status_code == 200
     assert response.json()['load'] == 0.4
 
+
 @pytest.mark.anyio
 async def test_can_successfully_patch_climbing_exercise_from_workout_from_nosent_to_sent():
     ac = await test_user_login()
@@ -80,6 +80,7 @@ async def test_can_successfully_patch_climbing_exercise_from_workout_from_nosent
 
     assert response.status_code == 200
     assert response.json()['load'] == 4.0
+
 
 @pytest.mark.anyio
 async def test_can_successfully_patch_climbing_exercise_from_workout_changing_when():
