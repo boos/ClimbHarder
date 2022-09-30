@@ -77,7 +77,7 @@ async def create_user(user: UserOnDB, current_user: dict = Depends(misc.security
             response_model_exclude_defaults=True,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
-             tags=["users"]
+            tags=["users"]
             )
 async def get_my_user_details(current_user: dict = Depends(misc.security.get_current_user)):
     return current_user
@@ -88,7 +88,7 @@ async def get_my_user_details(current_user: dict = Depends(misc.security.get_cur
             response_model_exclude_defaults=True,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
-             tags=["users"])
+            tags=["users"])
 async def get_other_user_details(username: str):
 
     user = await users_collection.find_one({"username":  username})
@@ -100,7 +100,7 @@ async def get_other_user_details(username: str):
 
 
 @router.delete("/users/me",
-             tags=["users"])
+               tags=["users"])
 async def delete_user(current_user: dict = Depends(misc.security.get_current_user)):
 
     response_status = await users_collection.delete_one({"username": current_user['username']})
@@ -117,7 +117,7 @@ async def delete_user(current_user: dict = Depends(misc.security.get_current_use
               response_model_exclude_defaults=True,
               response_model_exclude_unset=True,
               response_model_exclude_none=True,
-             tags=["users"])
+              tags=["users"])
 async def patch_user_details(user: UserInUpdateOnDB, current_user: dict = Depends(misc.security.get_current_user)):
 
     if user.password:
