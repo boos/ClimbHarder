@@ -1,15 +1,18 @@
 import datetime
 
 from bson import ObjectId
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult
 from starlette import status
 
 from misc import security, nosql
+from misc.security import oauth2_scheme
 from models.climbings import ClimbingExerciseOut, ClimbingExerciseIn, ClimbingExerciseOnDB, \
     ClimbingExerciseInUpdate
-from routers.workouts import router
+
+
+router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
 
 @router.post("/climbings/now",
@@ -24,24 +27,10 @@ async def add_a_climbing_exercise_to_a_workout_done_now(climbing_exercise: Climb
 
     when = datetime.datetime.now()
 
-    load = compute_climbing_grade_to_load(climbing_exercise)
-
-    climbing_exercise_out_on_db = ClimbingExerciseOnDB(grade=climbing_exercise.grade,
-                                                       moves=climbing_exercise.moves,
-                                                       total_moves=climbing_exercise.total_moves,
-                                                       sent=climbing_exercise.sent,
-                                                       load=load,
-                                                       when=when,
-                                                       username=current_user['username'])
-
-    climbing_exercise_out_on_db_dict = climbing_exercise_out_on_db.dict(exclude_none=True,
-                                                                        exclude_unset=True,
-                                                                        exclude_defaults=True)
-    response: InsertOneResult = await nosql.workouts_collection.insert_one(climbing_exercise_out_on_db_dict)
-
-    climbing_exercise_out_on_db_dict['_id'] = response.inserted_id
-
-    return climbing_exercise_out_on_db_dict
+    return add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise,
+                                                             when.year, when.month, when.day,
+                                                             when.hour, when.minute, when.second,
+                                                             current_user)
 
 
 @router.post('/climbings/{year}/{month}/{day}/{hour}/{minute}/{second}',
@@ -73,7 +62,7 @@ async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: C
 
     try:
 
-        response: InsertOneResult = await nosql.workouts_collection.insert_one(climbing_exercise_out_on_db_dict)
+        response: InsertOneResult = await nosql.climbings_collection.insert_one(climbing_exercise_out_on_db_dict)
 
     except DuplicateKeyError as err:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
@@ -96,7 +85,7 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
                                                   current_user: dict = Depends(security.get_current_user)):
     """ Update and return an exercise referenced by the object_id """
 
-    response = await nosql.workouts_collection.find_one(
+    response = await nosql.climbings_collection.find_one(
         {"_id": ObjectId(id), "username": current_user['username']})
 
     if climbing_exercise.grade != response['grade']:
@@ -122,9 +111,9 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
         ceo = ClimbingExerciseOnDB(grade=grade, sent=sent, moves=moves, total_moves=total_moves, load=load, when=when,
                                    username=current_user['username'])
 
-    update = await nosql.workouts_collection.update_one({"_id": ObjectId(id),
+    update = await nosql.climbings_collection.update_one({"_id": ObjectId(id),
                                                          "username": current_user['username']},
-                                                        {"$set": ceo.dict(exclude_none=True,
+                                                         {"$set": ceo.dict(exclude_none=True,
                                                                           exclude_unset=True,
                                                                           exclude_defaults=True)})
     ceo_dict = ceo.dict()
@@ -142,8 +131,7 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
 async def delete_a_climbing_exercise_in_a_workout(id, current_user: dict = Depends(security.get_current_user)):
     """ Delete the exercise referenced by the object_id """
 
-    print(id)
-    response_status = await nosql.workouts_collection.find_one_and_delete({"_id": ObjectId(id),
+    response_status = await nosql.climbings_collection.find_one_and_delete({"_id": ObjectId(id),
                                                                            "username": current_user['username']})
     if response_status is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
