@@ -37,5 +37,5 @@ async def mongodb_initialization():
     hangboarding_collection_indexes_keys = (await hangboarding_collection.index_information()).keys()
     if "unique_hangboarding_datetime" not in hangboarding_collection_indexes_keys:
         hangboarding_collection.create_index([("username", pymongo.ASCENDING), ("when", pymongo.DESCENDING)],
-                                          name="unique_hangboarding_datetime",
-                                          unique=True)
+                                             name="unique_hangboarding_datetime",
+                                             unique=True)

@@ -43,7 +43,7 @@ async def add_a_hangboard_exercise_to_a_workout(hangboard_exercise: Hangboarding
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Unable to insert the submitted hangboard exercise: "
                                    "another one exist with date {}.".format(
-                                    err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
+                                       err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
 
     he_out_on_db_dict['hang_id'] = response.inserted_id
 
