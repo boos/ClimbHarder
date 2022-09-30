@@ -19,7 +19,8 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              response_model_exclude_defaults=True,
              response_model_exclude_unset=True,
              response_model_exclude_none=True,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             tags=["users"])
 async def create_user(user: UserOnDB, current_user: dict = Depends(misc.security.get_current_user)):
     """
     Create a user with all the information:
@@ -76,6 +77,7 @@ async def create_user(user: UserOnDB, current_user: dict = Depends(misc.security
             response_model_exclude_defaults=True,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
+             tags=["users"]
             )
 async def get_my_user_details(current_user: dict = Depends(misc.security.get_current_user)):
     return current_user
@@ -85,7 +87,8 @@ async def get_my_user_details(current_user: dict = Depends(misc.security.get_cur
             response_model=UserOut,
             response_model_exclude_defaults=True,
             response_model_exclude_unset=True,
-            response_model_exclude_none=True)
+            response_model_exclude_none=True,
+             tags=["users"])
 async def get_other_user_details(username: str):
 
     user = await users_collection.find_one({"username":  username})
@@ -96,7 +99,8 @@ async def get_other_user_details(username: str):
     return user
 
 
-@router.delete("/users/me")
+@router.delete("/users/me",
+             tags=["users"])
 async def delete_user(current_user: dict = Depends(misc.security.get_current_user)):
 
     response_status = await users_collection.delete_one({"username": current_user['username']})
@@ -112,7 +116,8 @@ async def delete_user(current_user: dict = Depends(misc.security.get_current_use
               response_model=UserOut,
               response_model_exclude_defaults=True,
               response_model_exclude_unset=True,
-              response_model_exclude_none=True)
+              response_model_exclude_none=True,
+             tags=["users"])
 async def patch_user_details(user: UserInUpdateOnDB, current_user: dict = Depends(misc.security.get_current_user)):
 
     if user.password:

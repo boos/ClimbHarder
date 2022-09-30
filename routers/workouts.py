@@ -184,7 +184,7 @@ async def compute_workout_climbing_stats(exercises,
         exercises[previous_workout_date]['workout_rest_days'] = (current_workout_date - previous_workout_date_dt).days
 
 
-@router.get("/workouts", status_code=status.HTTP_200_OK)
+@router.get("/workouts", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_all_workout_details(current_user: dict = Depends(security.get_current_user)):
     """ Return all workouts details. """
 
@@ -199,7 +199,7 @@ async def get_all_workout_details(current_user: dict = Depends(security.get_curr
     return exercises
 
 
-@router.get("/workouts/latest", status_code=status.HTTP_200_OK)
+@router.get("/workouts/latest", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_latest_workout_details(current_user: dict = Depends(security.get_current_user)):
 
     # Find latest workout for the user
@@ -211,7 +211,7 @@ async def get_latest_workout_details(current_user: dict = Depends(security.get_c
                                                     document['when'].day, current_user)
 
 
-@router.get("/workouts/today", status_code=status.HTTP_200_OK)
+@router.get("/workouts/today", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_today_workout_details(current_user: dict = Depends(security.get_current_user)):
     """ Return today workout details. """
 
@@ -236,7 +236,7 @@ async def get_today_workout_details(current_user: dict = Depends(security.get_cu
     return exercises
 
 
-@router.get("/workouts/{year}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_workout_details(year, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
@@ -253,7 +253,7 @@ async def get_year_workout_details(year, current_user: dict = Depends(security.g
     return exercises
 
 
-@router.get("/workouts/{year}/{month}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_workout_details(year, month, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
@@ -272,7 +272,7 @@ async def get_year_month_workout_details(year, month, current_user: dict = Depen
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_workout_details(year, month, day, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day """
 
@@ -293,7 +293,7 @@ async def get_year_month_day_workout_details(year, month, day, current_user: dic
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}/{hour}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}/{hour}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_hour_workout_details(year, month, day, hour,
                                                   current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour """
@@ -317,7 +317,7 @@ async def get_year_month_day_hour_workout_details(year, month, day, hour,
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_hour_minute_workout_details(year, month, day, hour, minute,
                                                          current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, and minute """
@@ -343,7 +343,7 @@ async def get_year_month_day_hour_minute_workout_details(year, month, day, hour,
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}/{second}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}/{second}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_hour_minute_second_workout_details(year, month, day, hour, minute, second,
                                                                 current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, minute and second """

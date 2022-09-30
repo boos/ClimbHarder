@@ -19,7 +19,8 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              response_model_exclude_none=True,
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             tags=["hangboarding"])
 async def add_a_hangboard_exercise_to_a_workout(hangboard_exercise: HangboardingExerciseIn,
                                                 current_user: dict = Depends(security.get_current_user)):
     """ Add a hangboard exercise to a workout."""
@@ -54,7 +55,8 @@ async def add_a_hangboard_exercise_to_a_workout(hangboard_exercise: Hangboarding
               response_model_exclude_none=True,
               response_model_exclude_unset=True,
               response_model_exclude_defaults=True,
-              status_code=status.HTTP_200_OK)
+              status_code=status.HTTP_200_OK,
+              tags=["hangboarding"])
 async def patch_a_hangboard_exercise_in_a_workout(hang_id,
                                                   hangboard_exercise: HangboardingExerciseInUpdate,
                                                   current_user: dict = Depends(security.get_current_user)):
@@ -116,7 +118,8 @@ async def patch_a_hangboard_exercise_in_a_workout(hang_id,
                response_model_exclude_none=True,
                response_model_exclude_unset=True,
                response_model_exclude_defaults=True,
-               status_code=status.HTTP_200_OK)
+               status_code=status.HTTP_200_OK,
+               tags=["hangboarding"])
 async def delete_a_hangboard_exercise_in_a_workout(hang_id, current_user: dict = Depends(security.get_current_user)):
 
     response_status = await nosql.hangboarding_collection.find_one_and_delete({"_id": ObjectId(hang_id),

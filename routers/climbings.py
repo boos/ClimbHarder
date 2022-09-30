@@ -20,7 +20,8 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              response_model_exclude_none=True,
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             tags=["climbing"])
 async def add_a_climbing_exercise_to_a_workout_done_now(climbing_exercise: ClimbingExerciseIn,
                                                         current_user: dict = Depends(security.get_current_user)):
     """ Add a climbing exercise to a specific workout done now """
@@ -38,7 +39,8 @@ async def add_a_climbing_exercise_to_a_workout_done_now(climbing_exercise: Climb
              response_model_exclude_none=True,
              response_model_exclude_unset=True,
              response_model_exclude_defaults=True,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             tags=["climbing"])
 async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: ClimbingExerciseIn,
                                                             year, month, day, hour, minute, second,
                                                             current_user: dict = Depends(security.get_current_user)):
@@ -80,7 +82,8 @@ async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: C
               response_model_exclude_none=True,
               response_model_exclude_unset=True,
               response_model_exclude_defaults=True,
-              status_code=status.HTTP_200_OK)
+              status_code=status.HTTP_200_OK,
+              tags=["climbing"])
 async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExerciseInUpdate, id,
                                                   current_user: dict = Depends(security.get_current_user)):
     """ Update and return an exercise referenced by the object_id """
@@ -127,7 +130,8 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
                response_model_exclude_none=True,
                response_model_exclude_unset=True,
                response_model_exclude_defaults=True,
-               status_code=status.HTTP_200_OK)
+               status_code=status.HTTP_200_OK,
+               tags=["climbing"])
 async def delete_a_climbing_exercise_in_a_workout(id, current_user: dict = Depends(security.get_current_user)):
     """ Delete the exercise referenced by the object_id """
 
