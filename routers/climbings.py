@@ -72,24 +72,24 @@ async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: C
                                    "another one exist with date {}.".format(
                                        err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
 
-    climbing_exercise_out_on_db_dict['_id'] = response.inserted_id
+    climbing_exercise_out_on_db_dict['climb_id'] = response.inserted_id
 
     return climbing_exercise_out_on_db_dict
 
 
-@router.patch("/climbings/{id}",
+@router.patch("/climbings/{climb_id}",
               response_model=ClimbingExerciseOut,
               response_model_exclude_none=True,
               response_model_exclude_unset=True,
               response_model_exclude_defaults=True,
               status_code=status.HTTP_200_OK,
               tags=["climbing"])
-async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExerciseInUpdate, id,
+async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExerciseInUpdate, climb_id,
                                                   current_user: dict = Depends(security.get_current_user)):
     """ Update and return an exercise referenced by the object_id """
 
     response = await nosql.climbings_collection.find_one(
-        {"_id": ObjectId(id), "username": current_user['username']})
+        {"_id": ObjectId(climb_id), "username": current_user['username']})
 
     if climbing_exercise.grade != response['grade']:
         grade = climbing_exercise.grade
@@ -114,32 +114,32 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
         ceo = ClimbingExerciseOnDB(grade=grade, sent=sent, moves=moves, total_moves=total_moves, load=load, when=when,
                                    username=current_user['username'])
 
-    update = await nosql.climbings_collection.update_one({"_id": ObjectId(id),
+    update = await nosql.climbings_collection.update_one({"_id": ObjectId(climb_id),
                                                          "username": current_user['username']},
                                                          {"$set": ceo.dict(exclude_none=True,
                                                                           exclude_unset=True,
                                                                           exclude_defaults=True)})
     ceo_dict = ceo.dict()
-    ceo_dict['_id'] = id
+    ceo_dict['climb_id'] = climb_id
 
     return ceo_dict
 
 
-@router.delete("/climbings/{id}",
+@router.delete("/climbings/{climb_id}",
                response_model=ClimbingExerciseOut,
                response_model_exclude_none=True,
                response_model_exclude_unset=True,
                response_model_exclude_defaults=True,
                status_code=status.HTTP_200_OK,
                tags=["climbing"])
-async def delete_a_climbing_exercise_in_a_workout(id, current_user: dict = Depends(security.get_current_user)):
+async def delete_a_climbing_exercise_in_a_workout(climb_id, current_user: dict = Depends(security.get_current_user)):
     """ Delete the exercise referenced by the object_id """
 
-    response_status = await nosql.climbings_collection.find_one_and_delete({"_id": ObjectId(id),
+    response_status = await nosql.climbings_collection.find_one_and_delete({"_id": ObjectId(climb_id),
                                                                            "username": current_user['username']})
     if response_status is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unable to delete exercise '{}': _id not found.".format(id),
+                            detail="Unable to delete exercise '{}': _id not found.".format(climb_id),
                             headers={"WWW-Authenticate": "Bearer"})
 
     return response_status

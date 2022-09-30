@@ -85,7 +85,7 @@ class ClimbingExerciseInUpdate(ClimbingExerciseIn):
 
 
 class ClimbingExerciseOut(ClimbingExerciseIn):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    climb_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     load: float = Field(title='The estimated load of the exercise.')
     when: datetime = Field(title="Date and time of when the exercise has been done.")
 

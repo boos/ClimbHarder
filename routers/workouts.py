@@ -63,7 +63,9 @@ async def compute_workout_climbing_response(response_cursor):
         exercise.pop('minute', None)
         exercise.pop('second', None)
 
-        exercise['_id'] = str(exercise['_id'])
+        exercise['climb_id'] = str(exercise['_id'])
+
+        exercise.pop('_id', None)
 
         # New daily workout record creation
         if exercise['when'].strftime("%Y-%m-%d") not in workout_details:
