@@ -8,7 +8,7 @@ from models.security import Token
 router = APIRouter()
 
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Token, tags=["security"])
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -20,6 +20,3 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
 
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-

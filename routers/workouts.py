@@ -9,16 +9,19 @@ router = APIRouter(dependencies=[Depends(security.oauth2_scheme)])
 
 
 async def compute_workout_climbing_response(response_cursor):
-    """ Build a dict summarizing all climbing exercises in order of time, plus workout stats. """
+    """ Build a dict summarizing all climbing exercises in order of time, and relative workouts stats. """
 
     workout_details = OrderedDict()
 
     workouts = 0
 
-    # Total counters, and variables
+    # Count total number of unsent moves
     total_unsent_moves = 0
+    # Store total load of sent climb
     total_sent_load = 0
+    # Store total load of moves not leading to a sent
     total_unsent_moves_load = 0
+    # Store the overall load of sent and unsent climbs
     total_load = 0
     total_sent = []
     total_unsent = []
@@ -47,6 +50,8 @@ async def compute_workout_climbing_response(response_cursor):
     previous_workout_date = None
     previous_exercise_datetime = None
 
+    exercise = {'when': None}
+
     for exercise in await response_cursor.to_list(length=36500):
 
         # clean up not-needed projections data
@@ -58,7 +63,9 @@ async def compute_workout_climbing_response(response_cursor):
         exercise.pop('minute', None)
         exercise.pop('second', None)
 
-        exercise['_id'] = str(exercise['_id'])
+        exercise['climb_id'] = str(exercise['_id'])
+
+        exercise.pop('_id', None)
 
         # New daily workout record creation
         if exercise['when'].strftime("%Y-%m-%d") not in workout_details:
@@ -72,7 +79,8 @@ async def compute_workout_climbing_response(response_cursor):
 
             # It is a new workout, hence we can compute previous workout stats
             if previous_workout_date is not None and previous_workout_date != exercise['when'].strftime("%Y-%m-%d"):
-                await compute_workout_climbing_stats(workout_details, previous_workout_date,
+                await compute_workout_climbing_stats(workout_details,
+                                                     previous_workout_date, exercise['when'],
                                                      workout_sent_climbings_grades, workout_unsent_climbings_grades,
                                                      workout_unsent_moves,
                                                      workout_sent_load, workout_unsent_moves_load, workout_total_load)
@@ -134,7 +142,8 @@ async def compute_workout_climbing_response(response_cursor):
         previous_exercise_datetime = exercise['when']
 
     # compute workout climbing stats such as load, etc.
-    await compute_workout_climbing_stats(workout_details, previous_workout_date,
+    await compute_workout_climbing_stats(workout_details,
+                                         previous_workout_date, exercise['when'],
                                          workout_sent_climbings_grades, workout_unsent_climbings_grades,
                                          workout_unsent_moves,
                                          workout_sent_load, workout_unsent_moves_load, workout_total_load)
@@ -152,13 +161,14 @@ async def compute_workout_climbing_response(response_cursor):
     return workout_details
 
 
-async def compute_workout_climbing_stats(exercises, previous_workout_date,
+async def compute_workout_climbing_stats(exercises,
+                                         previous_workout_date, current_workout_date,
                                          workout_climbings_grade_sent, workout_climbings_grade_unsent,
                                          workout_unsent_moves_number,
-                                         workout_sent_load, workout_unsent_moves_load, workout_total_load, ):
+                                         workout_sent_load, workout_unsent_moves_load, workout_total_load):
     """ Compute some climbing exercise """
 
-    if previous_workout_date is None:
+    if previous_workout_date is None or current_workout_date is None:
         return
 
     exercises[previous_workout_date]['workout_sent_distribution'] = Counter(workout_climbings_grade_sent).most_common()
@@ -170,27 +180,32 @@ async def compute_workout_climbing_stats(exercises, previous_workout_date,
     exercises[previous_workout_date]['workout_unsent_moves_load'] = round(workout_unsent_moves_load, 2)
     exercises[previous_workout_date]['workout_total_load'] = round(workout_total_load, 2)
 
+    previous_workout_date_dt = datetime.datetime.strptime(previous_workout_date, "%Y-%m-%d")
+    if current_workout_date.date() != previous_workout_date_dt.date():
 
-@router.get("/workouts/", status_code=status.HTTP_200_OK)
+        exercises[previous_workout_date]['workout_rest_days'] = (current_workout_date - previous_workout_date_dt).days
+
+
+@router.get("/workouts", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_all_workout_details(current_user: dict = Depends(security.get_current_user)):
     """ Return all workouts details. """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/latest", status_code=status.HTTP_200_OK)
+@router.get("/workouts/latest", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_latest_workout_details(current_user: dict = Depends(security.get_current_user)):
 
     # Find latest workout for the user
-    response_cursor = nosql.workouts_collection.find({ 'username': current_user['username']}).sort('when',-1).limit(1)
+    response_cursor = nosql.climbings_collection.find({'username': current_user['username']}).sort('when', -1).limit(1)
     documents_list = await response_cursor.to_list(length=1)
     document = documents_list[0]
 
@@ -198,7 +213,7 @@ async def get_latest_workout_details(current_user: dict = Depends(security.get_c
                                                     document['when'].day, current_user)
 
 
-@router.get("/workouts/today", status_code=status.HTTP_200_OK)
+@router.get("/workouts/today", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_today_workout_details(current_user: dict = Depends(security.get_current_user)):
     """ Return today workout details. """
 
@@ -206,152 +221,152 @@ async def get_today_workout_details(current_user: dict = Depends(security.get_cu
     month = datetime.date.today().month
     day = datetime.date.today().day
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'},
-                                                                         'month': {'$month': '$when'},
-                                                                         'day': {'$dayOfMonth': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)},
-                                                                       'month': {'$eq': int(month)},
-                                                                       'day': {'$eq': int(day)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'},
+                                                                          'month': {'$month': '$when'},
+                                                                          'day': {'$dayOfMonth': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)},
+                                                                        'month': {'$eq': int(month)},
+                                                                        'day': {'$eq': int(day)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/{year}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_workout_details(year, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/{year}/{month}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_workout_details(year, month, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'},
-                                                                         'month': {'$month': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)},
-                                                                       'month': {'$eq': int(month)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'},
+                                                                          'month': {'$month': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)},
+                                                                        'month': {'$eq': int(month)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_workout_details(year, month, day, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'},
-                                                                         'month': {'$month': '$when'},
-                                                                         'day': {'$dayOfMonth': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)},
-                                                                       'month': {'$eq': int(month)},
-                                                                       'day': {'$eq': int(day)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'},
+                                                                          'month': {'$month': '$when'},
+                                                                          'day': {'$dayOfMonth': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)},
+                                                                        'month': {'$eq': int(month)},
+                                                                        'day': {'$eq': int(day)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}/{hour}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}/{hour}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_hour_workout_details(year, month, day, hour,
                                                   current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'},
-                                                                         'month': {'$month': '$when'},
-                                                                         'day': {'$dayOfMonth': '$when'},
-                                                                         'hour': {'$hour': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)},
-                                                                       'month': {'$eq': int(month)},
-                                                                       'day': {'$eq': int(day)},
-                                                                       'hour': {'$eq': int(hour)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'},
+                                                                          'month': {'$month': '$when'},
+                                                                          'day': {'$dayOfMonth': '$when'},
+                                                                          'hour': {'$hour': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)},
+                                                                        'month': {'$eq': int(month)},
+                                                                        'day': {'$eq': int(day)},
+                                                                        'hour': {'$eq': int(hour)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_hour_minute_workout_details(year, month, day, hour, minute,
                                                          current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, and minute """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'},
-                                                                         'month': {'$month': '$when'},
-                                                                         'day': {'$dayOfMonth': '$when'},
-                                                                         'hour': {'$hour': '$when'},
-                                                                         'minute': {'$minute': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)},
-                                                                       'month': {'$eq': int(month)},
-                                                                       'day': {'$eq': int(day)},
-                                                                       'hour': {'$eq': int(hour)},
-                                                                       'minute': {'$eq': int(minute)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'},
+                                                                          'month': {'$month': '$when'},
+                                                                          'day': {'$dayOfMonth': '$when'},
+                                                                          'hour': {'$hour': '$when'},
+                                                                          'minute': {'$minute': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)},
+                                                                        'month': {'$eq': int(month)},
+                                                                        'day': {'$eq': int(day)},
+                                                                        'hour': {'$eq': int(hour)},
+                                                                        'minute': {'$eq': int(minute)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 
     return exercises
 
 
-@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}/{second}", status_code=status.HTTP_200_OK)
+@router.get("/workouts/{year}/{month}/{day}/{hour}/{minute}/{second}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_month_day_hour_minute_second_workout_details(year, month, day, hour, minute, second,
                                                                 current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month, day, hour, minute and second """
 
-    response_cursor = nosql.workouts_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                           {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                         'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                         '_id': 1,
-                                                                         'year': {'$year': '$when'},
-                                                                         'month': {'$month': '$when'},
-                                                                         'day': {'$dayOfMonth': '$when'},
-                                                                         'hour': {'$hour': '$when'},
-                                                                         'minute': {'$minute': '$when'},
-                                                                         'second': {'$second': '$when'}}},
-                                                           {'$match': {'year': {'$eq': int(year)},
-                                                                       'month': {'$eq': int(month)},
-                                                                       'day': {'$eq': int(day)},
-                                                                       'hour': {'$eq': int(hour)},
-                                                                       'minute': {'$eq': int(minute)},
-                                                                       'second': {'$eq': int(second)}}},
-                                                           {'$sort': {'when': 1}}])
+    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
+                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
+                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
+                                                                          '_id': 1,
+                                                                          'year': {'$year': '$when'},
+                                                                          'month': {'$month': '$when'},
+                                                                          'day': {'$dayOfMonth': '$when'},
+                                                                          'hour': {'$hour': '$when'},
+                                                                          'minute': {'$minute': '$when'},
+                                                                          'second': {'$second': '$when'}}},
+                                                            {'$match': {'year': {'$eq': int(year)},
+                                                                        'month': {'$eq': int(month)},
+                                                                        'day': {'$eq': int(day)},
+                                                                        'hour': {'$eq': int(hour)},
+                                                                        'minute': {'$eq': int(minute)},
+                                                                        'second': {'$eq': int(second)}}},
+                                                            {'$sort': {'when': 1}}])
 
     exercises = await compute_workout_climbing_response(response_cursor)
 

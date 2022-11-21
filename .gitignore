@@ -213,3 +213,4 @@ cython_debug/
 
 # Environment Variables with MongoDB server and credentials
 set_mongodb_env.sh
+set_mongodb_env.ps1

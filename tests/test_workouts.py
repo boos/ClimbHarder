@@ -25,6 +25,7 @@ async def test_can_successfully_get_climbing_exercise_from_workout_year_month_da
 
 @pytest.mark.anyio
 async def test_can_successfully_get_climbing_exercise_from_workout_year_month_day_hour_minute():
+    # TODO check why is not working properly
     ac = await test_user_login()
 
     response = await ac.get('/workouts/2022/01/01/01/01')
@@ -161,20 +162,3 @@ async def test_can_successfully_get_climbing_exercise_from_latest_workout():
     datetime_str = datetime.datetime.now().strftime('%Y-%m-%d')
     assert {'grade': '6a', 'load': 6.0, 'sent': True}.items() <= response.json()[datetime_str]['climbings'][0].items()
     assert {'grade': '6a', 'load': 0.6, 'sent': False}.items() <= response.json()[datetime_str]['climbings'][1].items()
-
-
-@pytest.mark.anyio
-async def test_can_successfully_patch_climbing_exercise_from_workout_from_sent_to_nosent():
-    # TODO
-    ac = await test_user_login()
-
-
-@pytest.mark.anyio
-async def test_can_successfully_patch_climbing_exercise_from_workout_from_nosent_to_sent():
-    # TODO
-    ac = await test_user_login()
-
-
-async def test_can_successfully_patch_climbing_exercise_from_workout_changing_when():
-    # TODO
-    ac = await test_user_login()
