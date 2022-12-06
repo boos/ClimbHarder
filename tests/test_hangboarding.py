@@ -61,7 +61,7 @@ async def test_can_successfully_delete_a_hangboarding_exercise_in_a_workout():
     assert response.status_code == 200
     # hang_id is not in response when hangboard exercise is successfully deleted
     deleted = 'hang_id' not in response_d
-    assert deleted == True
+    assert deleted is True
     assert response_d['time_under_tension'] == 20
     assert response_d['expected_time_under_tension'] == 10
     assert response_d['edge_size'] == 10
