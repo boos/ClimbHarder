@@ -212,32 +212,6 @@ async def get_latest_workout_details(current_user: dict = Depends(security.get_c
     return await get_year_month_day_workout_details(document['when'].year, document['when'].month,
                                                     document['when'].day, current_user)
 
-
-@router.get("/workouts/today", status_code=status.HTTP_200_OK, tags=["workouts"])
-async def get_today_workout_details(current_user: dict = Depends(security.get_current_user)):
-    """ Return today workout details. """
-
-    year = datetime.date.today().year
-    month = datetime.date.today().month
-    day = datetime.date.today().day
-
-    response_cursor = nosql.climbings_collection.aggregate([{'$match': {'username': current_user["username"]}},
-                                                            {'$project': {'grade': 1, 'sent': 1, 'load': 1,
-                                                                          'when': 1, 'moves': 1, 'total_moves': 1,
-                                                                          '_id': 1,
-                                                                          'year': {'$year': '$when'},
-                                                                          'month': {'$month': '$when'},
-                                                                          'day': {'$dayOfMonth': '$when'}}},
-                                                            {'$match': {'year': {'$eq': int(year)},
-                                                                        'month': {'$eq': int(month)},
-                                                                        'day': {'$eq': int(day)}}},
-                                                            {'$sort': {'when': 1}}])
-
-    exercises = await compute_workout_climbing_response(response_cursor)
-
-    return exercises
-
-
 @router.get("/workouts/{year}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_workout_details(year, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """

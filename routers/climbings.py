@@ -12,7 +12,6 @@ from misc.security import oauth2_scheme
 from models.climbings import ClimbingExerciseOut, ClimbingExerciseIn, ClimbingExerciseOnDB, \
     ClimbingExerciseInUpdate
 
-
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
 
 
@@ -46,12 +45,12 @@ async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: C
     try:
 
         response: InsertOneResult = await nosql.climbings_collection.insert_one(climbing_exercise_out_on_db_dict)
-        print(4)
+
     except DuplicateKeyError as err:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Unable to insert the submitted climbing exercise: "
                                    "another one exist with date {}.".format(
-                                       err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
+                                err.details['keyValue']['when'].strftime("%Y-%m-%d %H:%M:%S")))
 
     climbing_exercise_out_on_db_dict['climb_id'] = response.inserted_id
 
@@ -86,8 +85,10 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
 
     sent = climbing_exercise.sent
     if sent:
+
         ceo = ClimbingExerciseOnDB(grade=grade, sent=sent, load=load, when=when,
                                    username=current_user['username'])
+
     else:
         moves = climbing_exercise.moves
         total_moves = climbing_exercise.total_moves
@@ -95,11 +96,10 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
         ceo = ClimbingExerciseOnDB(grade=grade, sent=sent, moves=moves, total_moves=total_moves, load=load, when=when,
                                    username=current_user['username'])
 
-    update = await nosql.climbings_collection.update_one({"_id": ObjectId(climb_id),
-                                                         "username": current_user['username']},
-                                                         {"$set": ceo.dict(exclude_none=True,
-                                                                           exclude_unset=True,
-                                                                           exclude_defaults=True)})
+    update = await nosql.climbings_collection.replace_one({"_id": ObjectId(climb_id),
+                                                          "username": current_user['username']},
+                                                          ceo.dict(exclude_none=True, exclude_unset=True,
+                                                                   exclude_defaults=True))
     ceo_dict = ceo.dict()
     ceo_dict['climb_id'] = climb_id
 
@@ -117,7 +117,7 @@ async def delete_a_climbing_exercise_in_a_workout(climb_id, current_user: dict =
     """ Delete the exercise referenced by the object_id """
 
     response_status = await nosql.climbings_collection.find_one_and_delete({"_id": ObjectId(climb_id),
-                                                                           "username": current_user['username']})
+                                                                            "username": current_user['username']})
     if response_status is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Unable to delete exercise '{}': _id not found.".format(climb_id),

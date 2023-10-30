@@ -80,22 +80,3 @@ async def test_can_successfully_patch_climbing_exercise_from_workout_changing_wh
 
     assert response.status_code == 200
     assert response.json()['when'] == "2022-01-02T01:01:01"
-
-
-@pytest.mark.anyio
-async def test_can_successfully_delete_climbing_exercise_from_workouts():
-    # TODO test_can_successfully_delete_climbing_exercise_from_workouts
-
-    ac = await test_user_login()
-    response = await ac.get('/workouts')
-    assert response.status_code == 200
-    response_data = response.json()
-
-    for key in response_data:
-
-        if key.find('-') == -1:
-            continue
-
-        for climbing in response_data[key]['climbings']:
-            response = await ac.delete('/climbings/{}'.format(climbing['climb_id']))
-            assert response.status_code == 200
