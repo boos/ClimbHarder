@@ -19,7 +19,6 @@ async def test_can_successfully_get_climbing_exercise_from_workout_year_month_da
                          "total_sent_load": 0, "total_unsent_moves_load": 0.4, "total_load": 0.4}
 
     assert expected_response.items() <= response.json().items()
-    # assert {'grade': '4a', 'load': 4.0, 'sent': True}.items() <= response.json()['2022-01-01']['climbings'][0].items()
     assert {'grade': '4a', 'load': 0.4, 'sent': False}.items() <= response.json()['2022-01-01']['climbings'][0].items()
 
 

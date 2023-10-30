@@ -50,4 +50,3 @@ class HangboardingExerciseOnDB(HangboardingExerciseInUpdate):
 class HangboardingExerciseOut(HangboardingExerciseIn):
     """ Model information to return data on API requests."""
     hang_id: PyObjectId = Field(default_factory=PyObjectId, alias="hang_id")
-
