@@ -1,4 +1,5 @@
 import datetime
+import pprint
 
 from bson import ObjectId
 from fastapi import Depends, HTTPException, APIRouter
@@ -13,25 +14,6 @@ from models.climbings import ClimbingExerciseOut, ClimbingExerciseIn, ClimbingEx
 
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)])
-
-
-@router.post("/climbings/now",
-             response_model=ClimbingExerciseOut,
-             response_model_exclude_none=True,
-             response_model_exclude_unset=True,
-             response_model_exclude_defaults=True,
-             status_code=status.HTTP_201_CREATED,
-             tags=["climbing"])
-async def add_a_climbing_exercise_to_a_workout_done_now(climbing_exercise: ClimbingExerciseIn,
-                                                        current_user: dict = Depends(security.get_current_user)):
-    """ Add a climbing exercise to a specific workout done now """
-
-    when = datetime.datetime.now()
-
-    return add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise,
-                                                             when.year, when.month, when.day,
-                                                             when.hour, when.minute, when.second,
-                                                             current_user)
 
 
 @router.post('/climbings/{year}/{month}/{day}/{hour}/{minute}/{second}',
@@ -61,11 +43,10 @@ async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: C
     climbing_exercise_out_on_db_dict = climbing_exercise_out_on_db.dict(exclude_none=True,
                                                                         exclude_unset=True,
                                                                         exclude_defaults=True)
-
     try:
 
         response: InsertOneResult = await nosql.climbings_collection.insert_one(climbing_exercise_out_on_db_dict)
-
+        print(4)
     except DuplicateKeyError as err:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Unable to insert the submitted climbing exercise: "
