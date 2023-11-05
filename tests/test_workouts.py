@@ -1,4 +1,3 @@
-import datetime
 import pprint
 
 import pytest

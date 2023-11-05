@@ -35,11 +35,11 @@ async def test_can_successfully_patch_climbing_exercise_from_workout_from_sent_t
     ac = await test_user_login()
     response = await ac.get('/workouts/2022/01/01/01/01/01')
     assert response.status_code == 200
-    id = response.json()['2022-01-01']['climbings'][0]['climb_id']
+    climb_id = response.json()['2022-01-01']['climbings'][0]['climb_id']
 
     data = {"grade": "4a", "moves": 1, "total_moves": 10, "sent": False}
     data = json.dumps(data)
-    response = await ac.patch('/climbings/{}'.format(id), content=data)
+    response = await ac.patch('/climbings/{}'.format(climb_id), content=data)
 
     assert response.status_code == 200
     assert response.json()['load'] == 0.4
@@ -50,11 +50,11 @@ async def test_can_successfully_patch_climbing_exercise_from_workout_from_nosent
     ac = await test_user_login()
     response = await ac.get('/workouts/2022/01/01/01/01/01')
     assert response.status_code == 200
-    id = response.json()['2022-01-01']['climbings'][0]['climb_id']
+    climb_id = response.json()['2022-01-01']['climbings'][0]['climb_id']
 
     data = {"grade": "4a", "sent": True}
     data = json.dumps(data)
-    response = await ac.patch('/climbings/{}'.format(id), content=data)
+    response = await ac.patch('/climbings/{}'.format(climb_id), content=data)
 
     assert response.status_code == 200
     assert response.json()['load'] == 4.0
@@ -65,18 +65,18 @@ async def test_can_successfully_patch_climbing_exercise_from_workout_changing_wh
     ac = await test_user_login()
     response = await ac.get('/workouts/2022/01/01/01/01/01')
     assert response.status_code == 200
-    id = response.json()['2022-01-01']['climbings'][0]['climb_id']
+    climb_id = response.json()['2022-01-01']['climbings'][0]['climb_id']
 
     data = {"grade": "4a", "sent": True, "when": "2022-01-02T01:01:10"}
     data = json.dumps(data)
-    response = await ac.patch('/climbings/{}'.format(id), content=data)
+    response = await ac.patch('/climbings/{}'.format(climb_id), content=data)
 
     assert response.status_code == 200
     assert response.json()['when'] == "2022-01-02T01:01:10"
 
     data = {"grade": "4a", "sent": True, "when": "2022-01-02T01:01:01"}
     data = json.dumps(data)
-    response = await ac.patch('/climbings/{}'.format(id), content=data)
+    response = await ac.patch('/climbings/{}'.format(climb_id), content=data)
 
     assert response.status_code == 200
     assert response.json()['when'] == "2022-01-02T01:01:01"
