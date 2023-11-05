@@ -1,5 +1,8 @@
+import json
+
 from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer
+from starlette import status
 
 from routers import users, security, climbings, workouts, hangboarding
 
@@ -20,7 +23,6 @@ async def application_initialization():
     await mongodb_initialization()
 
 
-@app.get("/")
+@app.get("/", status_code=status.HTTP_200_OK, tags=["root"])
 async def root():
-    # return "/docs"
     return {"message": "I am ClimbHarder, and I will make you climb HARDER!"}
