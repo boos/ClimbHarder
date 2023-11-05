@@ -6,6 +6,7 @@ import pytest
 
 from tests.shared import test_user_login
 
+
 @pytest.mark.anyio
 async def test_can_successfully_add_climbing_exercise_to_workout_sent_when():
     ac = await test_user_login()
