@@ -214,3 +214,6 @@ cython_debug/
 # Environment Variables with MongoDB server and credentials
 set_mongodb_env.sh
 set_mongodb_env.ps1
+
+# To activate virtualenvs
+source_me_to_activate_virtualenvs
