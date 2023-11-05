@@ -223,3 +223,7 @@ set_mongodb_env.ps1
 
 # To activate virtualenvs
 source_me_to_activate_virtualenvs
+
+# ignored as per Pycharm page suggesiton.
+/.idea/sqldialects.xml
+/.idea/misc.xml
