@@ -24,7 +24,6 @@ async def test_can_successfully_get_climbing_exercise_from_workout_year_month_da
 
 @pytest.mark.anyio
 async def test_can_successfully_get_climbing_exercise_from_workout_year_month_day_hour_minute():
-    # TODO check why is not working properly
     ac = await test_user_login()
 
     response = await ac.get('/workouts/2022/01/01/01/01')
@@ -98,8 +97,6 @@ async def test_can_successfully_get_climbing_exercise_from_workout_year():
 
     response = await ac.get('/workouts/2022')
     assert response.status_code == 200
-
-    pprint.pp(response.json())
 
     expected_response = {'workouts': 2,
                          "sent_distribution": [["4a", 1]], "unsent_moves_distribution": [["4a", 1]],
