@@ -1,5 +1,3 @@
-import json
-
 from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer
 from starlette import status
