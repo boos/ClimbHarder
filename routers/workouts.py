@@ -212,6 +212,7 @@ async def get_latest_workout_details(current_user: dict = Depends(security.get_c
     return await get_year_month_day_workout_details(document['when'].year, document['when'].month,
                                                     document['when'].day, current_user)
 
+
 @router.get("/workouts/{year}", status_code=status.HTTP_200_OK, tags=["workouts"])
 async def get_year_workout_details(year, current_user: dict = Depends(security.get_current_user)):
     """ Return workout details within a specified year, month. """
