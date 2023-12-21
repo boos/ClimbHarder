@@ -228,3 +228,4 @@ source_me_to_activate_virtualenvs
 /.idea/sqldialects.xml
 /.idea/misc.xml
 !/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/sonarlint.xml
