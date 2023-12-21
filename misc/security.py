@@ -53,18 +53,19 @@ async def authenticate_user(username: str, password: str):
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+    could_not_validate_credentials = "Could not validate credentials"
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=could_not_validate_credentials,
                                 headers={"WWW-Authenticate": "Bearer"})
         user = await verify_username(username)
         if user is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=could_not_validate_credentials,
                                 headers={"WWW-Authenticate": "Bearer"})
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=could_not_validate_credentials,
                             headers={"WWW-Authenticate": "Bearer"})
 
     return user

@@ -58,7 +58,7 @@ class PyObjectId(ObjectId):
     @classmethod
     def validate(cls, v):
         if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
+            raise ValueError("Invalid objectId")
         return ObjectId(v)
 
     @classmethod
@@ -77,8 +77,10 @@ class ClimbingExerciseIn(BaseModel):
         use_enum_values = True
 
 
+datetime_title = "Date and time of when the exercise has been done."
+
 class ClimbingExerciseInUpdate(ClimbingExerciseIn):
-    when: Optional[datetime] = Field(title="Date and time of when the exercise has been done.")
+    when: Optional[datetime] = Field(title=datetime_title)
 
     class Config:
         use_enum_values = True
@@ -87,7 +89,7 @@ class ClimbingExerciseInUpdate(ClimbingExerciseIn):
 class ClimbingExerciseOut(ClimbingExerciseIn):
     climb_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     load: float = Field(title='The estimated load of the exercise.')
-    when: datetime = Field(title="Date and time of when the exercise has been done.")
+    when: datetime = Field(title=datetime_title)
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -97,7 +99,7 @@ class ClimbingExerciseOut(ClimbingExerciseIn):
 class ClimbingExerciseOnDB(ClimbingExerciseIn):
     username: str = Field(..., title="The username.", max_length=64)
     load: float = Field(title='The estimated load of the exercise.')
-    when: datetime = Field(title="Date and time of when the exercise has been done.")
+    when: datetime = Field(title=datetime_title)
 
     class Config:
         json_encoders = {ObjectId: str}

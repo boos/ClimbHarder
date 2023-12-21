@@ -1,5 +1,4 @@
 import datetime
-import pprint
 
 from bson import ObjectId
 from fastapi import Depends, HTTPException, APIRouter
@@ -96,7 +95,7 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
         ceo = ClimbingExerciseOnDB(grade=grade, sent=sent, moves=moves, total_moves=total_moves, load=load, when=when,
                                    username=current_user['username'])
 
-    update = await nosql.climbings_collection.replace_one({"_id": ObjectId(climb_id),
+    _ = await nosql.climbings_collection.replace_one({"_id": ObjectId(climb_id),
                                                           "username": current_user['username']},
                                                           ceo.dict(exclude_none=True, exclude_unset=True,
                                                                    exclude_defaults=True))

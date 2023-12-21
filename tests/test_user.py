@@ -107,7 +107,7 @@ async def test_can_successfully_update_user_details():
         "moonboard_password": "Pilato"
     }
 
-    response = await ac.patch('/users/me', content=json.dumps(data))
+    _ = await ac.patch('/users/me', content=json.dumps(data))
 
     response = await ac.get('/users/me')
     data = response.json()
