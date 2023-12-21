@@ -227,3 +227,4 @@ source_me_to_activate_virtualenvs
 # ignored as per Pycharm page suggesiton.
 /.idea/sqldialects.xml
 /.idea/misc.xml
+!/.idea/inspectionProfiles/profiles_settings.xml
