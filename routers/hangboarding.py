@@ -106,7 +106,7 @@ async def patch_a_hangboard_exercise_in_a_workout(hang_id,
                                                             "username": current_user['username']},
                                                             {"$set": patched_hangboard_exercise.dict()})
     patched_hangboard_exercise_d = patched_hangboard_exercise.dict()
-    patched_hangboard_exercise_d['_id'] = hang_id
+    patched_hangboard_exercise_d['hang_id'] = hang_id
 
     return patched_hangboard_exercise_d
 
@@ -126,5 +126,7 @@ async def delete_a_hangboard_exercise_in_a_workout(hang_id, current_user: dict =
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Unable to delete the hangboard exercide '{}': hang_id not found.".format(id),
                             headers={"WWW-Authenticate": "Bearer"})
+
+    response_status['hang_id'] = hang_id
 
     return response_status

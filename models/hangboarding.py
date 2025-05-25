@@ -1,11 +1,11 @@
 from datetime import datetime
 from enum import Enum
+from typing import Optional, Annotated
 
 from bson import ObjectId
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import ConfigDict, BaseModel, Field
 
-from models.climbings import PyObjectId
+from models.climbings import ObjectIdPydanticAnnotation
 
 
 class GripType(Enum):
@@ -20,33 +20,31 @@ class HangboardingExerciseIn(BaseModel):
     expected_time_under_tension: int = Field(title="The expected time spent hanging.", gt=0)
     edge_size: int = Field(title="Edge size in milli meters.", gt=0)
     grip_type: GripType = Field(title="The grade of the boulder/route attempted.")
-    weight: Optional[int] = Field(title="Added or subtracted weight.")
+    weight: Optional[int] = Field(None, title="Added or subtracted weight.")
     when: datetime = Field(title="Date and time of when the exercise has been done.")
-
-    class Config:
-        json_encoders = {ObjectId: str}
-        use_enum_values = True
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(json_encoders={ObjectId: str}, use_enum_values=True)
 
 
 class HangboardingExerciseInUpdate(HangboardingExerciseIn):
     """ Model information to enable user to change datetime when a hang happened."""
-    time_under_tension: Optional[int] = Field(title="The seconds spent hanging.", gt=0)
-    expected_time_under_tension: Optional[int] = Field(title="The expected time spent hanging.", gt=0)
-    edge_size: Optional[int] = Field(title="Edge size in milli meters.", gt=0)
-    grip_type: Optional[GripType] = Field(title="The grade of the boulder/route attempted.")
-    weight: Optional[int] = Field(title="Added or subtracted weight.")
-    when: Optional[datetime] = Field(title="Date and time of when the exercise has been done.")
+    time_under_tension: Optional[int] = Field(None, title="The seconds spent hanging.", gt=0)
+    expected_time_under_tension: Optional[int] = Field(None, title="The expected time spent hanging.", gt=0)
+    edge_size: Optional[int] = Field(None, title="Edge size in milli meters.", gt=0)
+    grip_type: Optional[GripType] = Field(None, title="The grade of the boulder/route attempted.")
+    weight: Optional[int] = Field(None, title="Added or subtracted weight.")
+    when: Optional[datetime] = Field(None, title="Date and time of when the exercise has been done.")
 
 
 class HangboardingExerciseOnDB(HangboardingExerciseInUpdate):
     """ Model information to enable to store data on database. """
     username: str = Field(..., title="The username.", max_length=64)
-
-    class Config:
-        json_encoders = {ObjectId: str}
-        extra = "forbid"
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(json_encoders={ObjectId: str}, extra="forbid")
 
 
 class HangboardingExerciseOut(HangboardingExerciseIn):
     """ Model information to return data on API requests."""
-    hang_id: PyObjectId = Field(default_factory=PyObjectId, alias="hang_id")
+    hang_id: Annotated[ObjectId, ObjectIdPydanticAnnotation]

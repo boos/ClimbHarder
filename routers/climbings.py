@@ -121,7 +121,7 @@ async def delete_a_climbing_exercise_in_a_workout(climb_id, current_user: dict =
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Unable to delete exercise '{}': _id not found.".format(climb_id),
                             headers={"WWW-Authenticate": "Bearer"})
-
+    response_status['climb_id'] = climb_id
     return response_status
 
 

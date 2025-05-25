@@ -1,9 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, Annotated, Any
 
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import core_schema
 
 
 class FontBoulderingGrade(Enum):
@@ -50,58 +52,82 @@ class FontBoulderingGrade(Enum):
     F_9C_PLUS = "9c+"
 
 
-class PyObjectId(ObjectId):
+class ObjectIdPydanticAnnotation:
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+    def validate_object_id(cls, v: Any, handler) -> ObjectId:
+        if isinstance(v, ObjectId):
+            return v
+
+        s = handler(v)
+        if ObjectId.is_valid(s):
+            return ObjectId(s)
+        else:
+            raise ValueError("Invalid ObjectId")
 
     @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectId")
-        return ObjectId(v)
+    def __get_pydantic_core_schema__(cls, source_type, _handler) -> core_schema.CoreSchema:
+        assert source_type is ObjectId
+        return core_schema.no_info_wrap_validator_function(
+            cls.validate_object_id,
+            core_schema.str_schema(),
+            serialization=core_schema.to_string_ser_schema(),
+        )
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+    def __get_pydantic_json_schema__(cls, _core_schema, handler) -> JsonSchemaValue:
+        return handler(core_schema.str_schema())
+
+
+# class PyObjectId(ObjectId):
+# @classmethod
+# TODO[pydantic]: We couldn't refactor `__get_validators__`, please create the `__get_pydantic_core_schema__` manually.
+# Check https://docs.pydantic.dev/latest/migration/#defining-custom-types for more information.
+# def __get_validators__(cls):
+#    yield cls.validate
+
+
+#    @classmethod
+#    def validate(cls, v):
+#        if not ObjectId.is_valid(v):
+#            raise ValueError("Invalid objectId")
+#        return ObjectId(v)
+
+# @classmethod
+# TODO[pydantic]: We couldn't refactor `__modify_schema__`, please create the `__get_pydantic_json_schema__` manually.
+# Check https://docs.pydantic.dev/latest/migration/#defining-custom-types for more information.
+# def __modify_schema__(cls, field_schema):
+#    field_schema.update(type="string")
 
 
 class ClimbingExerciseIn(BaseModel):
     """ Collect basic information regarding a climb """
     grade: FontBoulderingGrade = Field(title="The grade of the boulder/route attempted.")
-    moves: Optional[int] = Field(title="The number of moves successfully done.", gt=0)
-    total_moves: Optional[int] = Field(title="The total number of moves of the boulder/route attempted.", gt=0)
+    moves: Optional[int] = Field(None, title="The number of moves successfully done.", gt=0)
+    total_moves: Optional[int] = Field(None, title="The total number of moves of the boulder/route attempted.", gt=0)
     sent: bool = Field(title="True if you sent the boulder/route.")
-
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 datetime_title = "Date and time of when the exercise has been done."
 
 class ClimbingExerciseInUpdate(ClimbingExerciseIn):
-    when: Optional[datetime] = Field(title=datetime_title)
-
-    class Config:
-        use_enum_values = True
+    when: Optional[datetime] = Field(None, title=datetime_title)
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class ClimbingExerciseOut(ClimbingExerciseIn):
-    climb_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    climb_id: Annotated[ObjectId, ObjectIdPydanticAnnotation]
     load: float = Field(title='The estimated load of the exercise.')
     when: datetime = Field(title=datetime_title)
-
-    class Config:
-        json_encoders = {ObjectId: str}
-        use_enum_values = True
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    # model_config = ConfigDict(json_encoders={ObjectId: str}, use_enum_values=True)
 
 
 class ClimbingExerciseOnDB(ClimbingExerciseIn):
     username: str = Field(..., title="The username.", max_length=64)
     load: float = Field(title='The estimated load of the exercise.')
     when: datetime = Field(title=datetime_title)
-
-    class Config:
-        json_encoders = {ObjectId: str}
-        use_enum_values = True
-        extra = "forbid"
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    # model_config = ConfigDict(json_encoders={ObjectId: str}, use_enum_values=True, extra="forbid")
