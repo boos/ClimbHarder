@@ -34,7 +34,7 @@ async def create_user(user: UserOnDB, current_user: dict = Depends(misc.security
     - **bio**: each user might have a biographic field
     - **sex**: each user might define his/her sex between male/female/non-binary
 
-    - **birthday**: each user might define his/her sex between male/female/non-binary
+    - **birthday**: each user might define his/her birthday
     - **location**: each user might define his/her location
     - **country**: each user might define his/her country
 

@@ -22,11 +22,12 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)])
              status_code=status.HTTP_201_CREATED,
              tags=["climbing"])
 async def add_a_climbing_exercise_to_a_workout_using_a_date(climbing_exercise: ClimbingExerciseIn,
-                                                            year, month, day, hour, minute, second,
+                                                            year: int, month: int, day: int, hour: int, minute: int,
+                                                            second: int,
                                                             current_user: dict = Depends(security.get_current_user)):
     """ Add a climbing exercise to the year, month, day, hour, minute and second workout. """
 
-    when = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+    when = datetime.datetime(year, month, day, hour, minute, second)
 
     load = compute_climbing_grade_to_load(climbing_exercise)
 
@@ -99,7 +100,7 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
                                                           "username": current_user['username']},
                                                           ceo.dict(exclude_none=True, exclude_unset=True,
                                                                    exclude_defaults=True))
-    ceo_dict = ceo.dict()
+    ceo_dict = ceo.model_dump()
     ceo_dict['climb_id'] = climb_id
 
     return ceo_dict
