@@ -110,6 +110,7 @@ class ClimbingExerciseIn(BaseModel):
 
 datetime_title = "Date and time of when the exercise has been done."
 
+
 class ClimbingExerciseInUpdate(ClimbingExerciseIn):
     when: Optional[datetime] = Field(None, title=datetime_title)
     model_config = ConfigDict(use_enum_values=True)
