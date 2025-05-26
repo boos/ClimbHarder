@@ -37,9 +37,6 @@ class UserOut(UserIn):
 
     email: EmailStr = Field(..., title="The email address of the user.")
 
-    moonboard_username: Optional[str] = Field(None, title="MoonBoard username.", max_length=256)
-    moonboard_password: Optional[SecretStr] = Field(None, title="MoonBoard password.", max_length=256)
-
 
 class UserOnDB(UserIn):
     """ """
@@ -49,8 +46,6 @@ class UserOnDB(UserIn):
 
     email: EmailStr = Field(..., title="The email address of the user.")
 
-    moonboard_username: Optional[str] = Field(None, title="MoonBoard username.", max_length=256)
-    moonboard_password: Optional[SecretStr] = Field(None, title="MoonBoard password.", max_length=256)
     model_config = ConfigDict(extra="forbid")
 
 
@@ -59,6 +54,4 @@ class UserInUpdateOnDB(UserIn):
 
     password: Optional[SecretStr] = Field(None, title="The ClimbHarder password.", max_length=256)
 
-    moonboard_username: Optional[str] = Field(None, title="MoonBoard username.", max_length=256)
-    moonboard_password: Optional[SecretStr] = Field(None, title="MoonBoard password.", max_length=256)
     model_config = ConfigDict(extra="forbid")

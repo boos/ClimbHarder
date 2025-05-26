@@ -103,8 +103,6 @@ async def test_can_successfully_update_user_details():
         "country": "Switzerland",
         "bouldering": True,
         "sport_climbing": False,
-        "moonboard_username": "Ponzio",
-        "moonboard_password": "Pilato"
     }
 
     _ = await ac.patch('/users/me', content=json.dumps(data))
@@ -116,7 +114,6 @@ async def test_can_successfully_update_user_details():
     data['password'] = '**********'
     data['name'] = 'Climbing'
     data['surname'] = "Machine"
-    data['moonboard_password'] = '**********'
     data['email'] = 'rmartelloni+test@gmail.com'
     assert response.status_code == 200
     assert response.json() == data

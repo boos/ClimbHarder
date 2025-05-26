@@ -41,8 +41,6 @@ async def create_user(user: UserOnDB, current_user: dict = Depends(misc.security
     - **bouldering**: each user might define if he/she does bouldering
     - **sport_climbing**: each user might define if he/she does sport climbing
 
-    - **moonboard_username**: each user might define he/she moonboard username
-    - **moonboard_username**: each user might define he/she moonboard password
     """
 
     # TODO: ensure that users can only be created after email verification
@@ -122,9 +120,6 @@ async def patch_user_details(user: UserInUpdateOnDB, current_user: dict = Depend
 
     if user.password:
         user.password = misc.security.get_password_hash(user.password.get_secret_value())
-
-    if user.moonboard_password:
-        user.moonboard_password = user.moonboard_password.get_secret_value()
 
     if user.birthday:
         user.birthday = datetime.combine(user.birthday, datetime.min.time())
