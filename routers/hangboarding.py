@@ -103,8 +103,8 @@ async def patch_a_hangboard_exercise_in_a_workout(hang_id,
                                                           when=when, username=current_user['username'])
 
     _ = await nosql.hangboarding_collection.update_one({"_id": ObjectId(hang_id),
-                                                            "username": current_user['username']},
-                                                            {"$set": patched_hangboard_exercise.dict()})
+                                                        "username": current_user['username']},
+                                                       {"$set": patched_hangboard_exercise.dict()})
     patched_hangboard_exercise_d = patched_hangboard_exercise.dict()
     patched_hangboard_exercise_d['hang_id'] = hang_id
 
