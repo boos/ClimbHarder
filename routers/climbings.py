@@ -97,9 +97,9 @@ async def update_a_climbing_exercise_in_a_workout(climbing_exercise: ClimbingExe
                                    username=current_user['username'])
 
     _ = await nosql.climbings_collection.replace_one({"_id": ObjectId(climb_id),
-                                                          "username": current_user['username']},
-                                                          ceo.dict(exclude_none=True, exclude_unset=True,
-                                                                   exclude_defaults=True))
+                                                      "username": current_user['username']},
+                                                     ceo.dict(exclude_none=True, exclude_unset=True,
+                                                              exclude_defaults=True))
     ceo_dict = ceo.model_dump()
     ceo_dict['climb_id'] = climb_id
 
