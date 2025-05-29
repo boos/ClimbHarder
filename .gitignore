@@ -176,3 +176,4 @@ set_mongodb_env.ps1
 
 # To activate virtualenvs
 source_me_to_activate_virtualenvs
+!/.venv/
