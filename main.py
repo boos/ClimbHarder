@@ -3,16 +3,17 @@ from fastapi.security import OAuth2PasswordBearer
 from starlette import status
 
 from routers import users, security, climbings, workouts, hangboarding
+from routers import physiobiometrics
 
 app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 app.include_router(climbings.router)
 app.include_router(hangboarding.router)
 app.include_router(workouts.router)
 app.include_router(users.router)
 app.include_router(security.router)
+app.include_router(physiobiometrics.router)
 
 
 @app.on_event("startup")

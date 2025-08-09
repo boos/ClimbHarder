@@ -16,7 +16,7 @@ db = motor_asyncio.AsyncIOMotorClient(MONGODB_CONNECTION_STRING).get_database("C
 users_collection: Collection = db.get_collection("users")
 climbings_collection: Collection = db.get_collection("climbings")
 hangboarding_collection: Collection = db.get_collection("hangboarding")
-
+sleep_collection: Collection = db.get_collection("sleep")
 
 async def mongodb_initialization():
     # Ensure no user have the same username
@@ -39,3 +39,10 @@ async def mongodb_initialization():
         hangboarding_collection.create_index([("username", pymongo.ASCENDING), ("when", pymongo.DESCENDING)],
                                              name="unique_hangboarding_datetime",
                                              unique=True)
+
+    sleep_collection_indexes_keys = (await sleep_collection.index_information()).keys()
+    if "unique_sleep_datetime" not in sleep_collection_indexes_keys:
+        sleep_collection.create_index([("username", pymongo.ASCENDING), ("date", pymongo.DESCENDING)],
+                                      name="unique_sleep_datetime",
+                                      unique=True
+        )
