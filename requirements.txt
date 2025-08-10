@@ -2,8 +2,6 @@ fastapi
 httpx
 motor
 passlib
-pydantic
-pydantic_core
 pymongo
 pytest
 python-dotenv
